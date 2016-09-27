@@ -1,0 +1,19 @@
+; GetTicks : 0x03B
+
+    .global _GetTicks
+
+_GetTicks:
+    mov.l syscallAddress, r1
+    mov.l _GetTicks_id, r0
+    jmp @r1
+    nop
+
+    .align 4
+_GetTicks_id:
+    .data h'03B
+
+    .align 4
+syscallAddress:
+    .data h'80010070
+
+    .end

@@ -1,0 +1,3107 @@
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    1
+
+************ OBJECT LISTING ************
+
+FILE NAME: C:\Users\Nozalia\Desktop\Add-ins\Projects\Hex\Hex.cpp
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+         Hex.cpp     1    //TODO : CRITICAL : Rethink the random map generation (maybe use pathfinding ?)
+         Hex.cpp     2    
+         Hex.cpp     3    #include "Sources/MapDisplayManager.h"
+         Hex.cpp     4    
+         Hex.cpp     5    extern "C" {
+         Hex.cpp     6        #include "Sources/getTicks.h"
+         Hex.cpp     7        #include <stdlib.h>
+         Hex.cpp     8        #include <math.h>
+         Hex.cpp     9        #include <string.h>
+         Hex.cpp    10    };
+         Hex.cpp    11    
+         Hex.cpp    12    enum Neighbour {UP_R = 0, R, BOTTOM_R, BOTTOM_L, L, UP_L};
+         Hex.cpp    13    
+         Hex.cpp    14    MapDisplayManager manager;
+         Hex.cpp    15    PointsManager points;
+         Hex.cpp    16    
+         Hex.cpp    17    PlayerType turn;
+         Hex.cpp    18    bool reinforcement;
+         Hex.cpp    19    
+         Hex.cpp    20    int timeRefCurrent;
+         Hex.cpp    21    int timeRefLocked;
+         Hex.cpp    22    
+         Hex.cpp    23    size_t rPointsPlayer1;
+         Hex.cpp    24    size_t rPointsPlayer2;
+         Hex.cpp    25    
+         Hex.cpp    26    unsigned char* toArray(int number){
+P   00000000              _toArray__Fi:                    ; function: toArray(int)
+                                                           ; frame size=52
+                                                           ; used runtime library name:
+                                                           ; __divls, __modls, __addd, __dtoi, __itod
+    00000000 2FE6                   MOV.L       R14,@-R15
+         Hex.cpp    27        int n = log10(number) + 1;
+    00000002 6043                   MOV         R4,R0
+    00000004 D393                   MOV.L       L796,R3    ; __itod
+    00000006 2FD6                   MOV.L       R13,@-R15
+    00000008 2FC6                   MOV.L       R12,@-R15
+    0000000A 6C43                   MOV         R4,R12
+    0000000C 2FB6                   MOV.L       R11,@-R15
+    0000000E 4F22                   STS.L       PR,@-R15
+    00000010 7FFC                   ADD         #-4,R15
+    00000012 7FE8                   ADD         #-24,R15
+    00000014 430B                   JSR         @R3
+    00000016 2FF6                   MOV.L       R15,@-R15
+    00000018 D18F                   MOV.L       L796+4,R1  ; _log10
+    0000001A E208                   MOV         #8,R2
+    0000001C 32FC                   ADD         R15,R2
+    0000001E 410B                   JSR         @R1
+    00000020 2F26                   MOV.L       R2,@-R15
+    00000022 7F0C                   ADD         #12,R15
+    00000024 D18E                   MOV.L       L796+12,R1 ; __addd
+    00000026 E200                   MOV         #0,R2
+    00000028 2F26                   MOV.L       R2,@-R15
+    0000002A D28C                   MOV.L       L796+8,R2  ; H'3FF00000
+    0000002C 2F26                   MOV.L       R2,@-R15
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    2
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    0000002E 63F3                   MOV         R15,R3
+    00000030 7310                   ADD         #16,R3
+    00000032 410B                   JSR         @R1
+    00000034 2F36                   MOV.L       R3,@-R15
+    00000036 D28B                   MOV.L       L796+16,R2 ; __dtoi
+    00000038 420B                   JSR         @R2
+    0000003A 0009                   NOP
+         Hex.cpp    28        int i;
+         Hex.cpp    29    
+         Hex.cpp    30        unsigned char *numberArray = (unsigned char*)(calloc(n, sizeof(unsigned char)));
+    0000003C D38A                   MOV.L       L796+20,R3 ; _calloc
+    0000003E 6E03                   MOV         R0,R14
+    00000040 E501                   MOV         #1,R5
+    00000042 430B                   JSR         @R3
+    00000044 6403                   MOV         R0,R4
+    00000046 6D03                   MOV         R0,R13
+         Hex.cpp    31    
+         Hex.cpp    32        for (i = 0; i < n; ++i, number /= 10){
+    00000048 EB00                   MOV         #0,R11
+    0000004A 65B3                   MOV         R11,R5
+    0000004C 4E15                   CMP/PL      R14
+    0000004E 8F0F                   BF/S        L613
+    00000050 E40A                   MOV         #10,R4
+    00000052              L614:                             
+         Hex.cpp    33            numberArray[i] = number % 10;
+    00000052 6353                   MOV         R5,R3
+    00000054 D285                   MOV.L       L796+24,R2 ; __modls
+    00000056 61C3                   MOV         R12,R1
+    00000058 33DC                   ADD         R13,R3
+    0000005A 420B                   JSR         @R2
+    0000005C 6043                   MOV         R4,R0
+    0000005E 7501                   ADD         #1,R5
+    00000060 2300                   MOV.B       R0,@R3
+    00000062 6043                   MOV         R4,R0
+    00000064 D382                   MOV.L       L796+28,R3 ; __divls
+    00000066 430B                   JSR         @R3
+    00000068 61C3                   MOV         R12,R1
+    0000006A 35E3                   CMP/GE      R14,R5
+    0000006C 8FF1                   BF/S        L614
+    0000006E 6C03                   MOV         R0,R12
+    00000070              L613:                             
+         Hex.cpp    34        }
+         Hex.cpp    35    
+         Hex.cpp    36        if (n > 1){
+    00000070 E301                   MOV         #1,R3
+    00000072 3E37                   CMP/GT      R3,R14
+    00000074 8B22                   BF          L615
+         Hex.cpp    37            unsigned char *tmp = new unsigned char;
+    00000076 D17F                   MOV.L       L796+32,R1 ; ___nw__FUl
+    00000078 410B                   JSR         @R1
+    0000007A 6433                   MOV         R3,R4
+    0000007C 6403                   MOV         R0,R4
+         Hex.cpp    38            
+         Hex.cpp    39            for (i = 0; i < n; ++i)
+    0000007E 66B3                   MOV         R11,R6
+    00000080 E700                   MOV         #0,R7
+    00000082 37DC                   ADD         R13,R7
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    3
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000084 2F72                   MOV.L       R7,@R15
+    00000086 E500                   MOV         #0,R5
+    00000088 4E15                   CMP/PL      R14
+    0000008A 8F06                   BF/S        L616
+    0000008C 354C                   ADD         R4,R5
+    0000008E              L617:                             
+    0000008E 7601                   ADD         #1,R6
+         Hex.cpp    40                tmp[i] = numberArray[i];
+    00000090 6374                   MOV.B       @R7+,R3
+    00000092 36E3                   CMP/GE      R14,R6
+    00000094 2530                   MOV.B       R3,@R5
+    00000096 8FFA                   BF/S        L617
+    00000098 7501                   ADD         #1,R5
+    0000009A              L616:                             
+         Hex.cpp    41    
+         Hex.cpp    42            for (i = 0; i < n; ++i)
+    0000009A 67B3                   MOV         R11,R7
+    0000009C 65E3                   MOV         R14,R5
+    0000009E 75FF                   ADD         #-1,R5
+    000000A0 354C                   ADD         R4,R5
+    000000A2 4E15                   CMP/PL      R14
+    000000A4 8F07                   BF/S        L618
+    000000A6 66F2                   MOV.L       @R15,R6
+    000000A8              L619:                             
+         Hex.cpp    43                numberArray[i] = tmp[n - i - 1];
+    000000A8 6250                   MOV.B       @R5,R2
+    000000AA 7701                   ADD         #1,R7
+    000000AC 2620                   MOV.B       R2,@R6
+    000000AE 75FF                   ADD         #-1,R5
+    000000B0 37E3                   CMP/GE      R14,R7
+    000000B2 8FF9                   BF/S        L619
+    000000B4 7601                   ADD         #1,R6
+    000000B6              L618:                             
+         Hex.cpp    44    
+         Hex.cpp    45            delete tmp;
+    000000B6 D270                   MOV.L       L796+36,R2 ; ___dl__FPv
+    000000B8 420B                   JSR         @R2
+    000000BA 0009                   NOP
+    000000BC              L615:                             
+         Hex.cpp    46        }
+         Hex.cpp    47    
+         Hex.cpp    48        return numberArray;
+    000000BC 60D3                   MOV         R13,R0
+         Hex.cpp    49    }
+    000000BE 7F04                   ADD         #4,R15
+    000000C0 4F26                   LDS.L       @R15+,PR
+    000000C2 6BF6                   MOV.L       @R15+,R11
+    000000C4 6CF6                   MOV.L       @R15+,R12
+    000000C6 6DF6                   MOV.L       @R15+,R13
+    000000C8 000B                   RTS
+    000000CA 6EF6                   MOV.L       @R15+,R14
+         Hex.cpp    50    
+         Hex.cpp    51    void printReinforcementPoints(){
+    000000CC              _printReinforcementPoints__Fv:   ; function: printReinforcementPoints()
+                                                           ; frame size=60
+                                                           ; used runtime library name:
+                                                           ; __addd, __dtoi, __utod, __ltd
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    4
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000000CC 2FE6                   MOV.L       R14,@-R15
+    000000CE 2FD6                   MOV.L       R13,@-R15
+    000000D0 2FC6                   MOV.L       R12,@-R15
+    000000D2 2FB6                   MOV.L       R11,@-R15
+    000000D4 2FA6                   MOV.L       R10,@-R15
+    000000D6 4F22                   STS.L       PR,@-R15
+         Hex.cpp    52        unsigned char *asciiNumber = new unsigned char;
+    000000D8 D366                   MOV.L       L796+32,R3 ; ___nw__FUl
+    000000DA 430B                   JSR         @R3
+    000000DC E401                   MOV         #1,R4
+    000000DE 6E03                   MOV         R0,R14
+         Hex.cpp    53    
+         Hex.cpp    54        if (turn == PLAYER_1){
+    000000E0 DD5D                   MOV.L       L796+4,R13 ; _log10
+    000000E2 D366                   MOV.L       L796+40,R3 ; _turn
+    000000E4 6232                   MOV.L       @R3,R2
+    000000E6 2228                   TST         R2,R2
+    000000E8 8F40                   BF/S        L621
+    000000EA EC00                   MOV         #0,R12
+    000000EC DA64                   MOV.L       L796+44,R10; _rPointsPlayer1
+    000000EE 6BA2                   MOV.L       @R10,R11
+    000000F0 2BB8                   TST         R11,R11
+    000000F2 8903                   BT          L622
+         Hex.cpp    55            if (rPointsPlayer1 != 0) 
+         Hex.cpp    56                asciiNumber = toArray(rPointsPlayer1);
+    000000F4 BF84                   BSR         _toArray__Fi
+    000000F6 64B3                   MOV         R11,R4
+    000000F8 A001                   BRA         L623
+    000000FA 6E03                   MOV         R0,R14
+    000000FC              L622:                             
+         Hex.cpp    57            else
+         Hex.cpp    58                asciiNumber[0] = 0;
+    000000FC 2EC0                   MOV.B       R12,@R14
+    000000FE              L623:                             
+         Hex.cpp    59            
+         Hex.cpp    60            for (size_t i = 0; i < (log10(rPointsPlayer1) + 1); ++i){
+    000000FE A005                   BRA         L624
+    00000100 6BC3                   MOV         R12,R11
+    00000102              L625:                             
+         Hex.cpp    61                asciiNumber[i] += 48;
+    00000102 60E3                   MOV         R14,R0
+    00000104 03BC                   MOV.B       @(R0,R11),R3
+    00000106 7330                   ADD         #48,R3
+    00000108 0B34                   MOV.B       R3,@(R0,R11)
+    0000010A 7B01                   ADD         #1,R11
+    0000010C              L624:                             
+    0000010C D25D                   MOV.L       L796+48,R2 ; __utod
+    0000010E 60B3                   MOV         R11,R0
+    00000110 7FF8                   ADD         #-8,R15
+    00000112 420B                   JSR         @R2
+    00000114 2FF6                   MOV.L       R15,@-R15
+    00000116 60A2                   MOV.L       @R10,R0
+    00000118 D35A                   MOV.L       L796+48,R3 ; __utod
+    0000011A 7FE8                   ADD         #-24,R15
+    0000011C 430B                   JSR         @R3
+    0000011E 2FF6                   MOV.L       R15,@-R15
+    00000120 E208                   MOV         #8,R2
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    5
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000122 32FC                   ADD         R15,R2
+    00000124 4D0B                   JSR         @R13
+    00000126 2F26                   MOV.L       R2,@-R15
+    00000128 D24D                   MOV.L       L796+12,R2 ; __addd
+    0000012A 7F0C                   ADD         #12,R15
+    0000012C E100                   MOV         #0,R1
+    0000012E 2F16                   MOV.L       R1,@-R15
+    00000130 D14A                   MOV.L       L796+8,R1  ; H'3FF00000
+    00000132 2F16                   MOV.L       R1,@-R15
+    00000134 63F3                   MOV         R15,R3
+    00000136 7310                   ADD         #16,R3
+    00000138 420B                   JSR         @R2
+    0000013A 2F36                   MOV.L       R3,@-R15
+    0000013C D152                   MOV.L       L796+52,R1 ; __ltd
+    0000013E 410B                   JSR         @R1
+    00000140 0009                   NOP
+    00000142 8800                   CMP/EQ      #0,R0
+    00000144 8BDD                   BF          L625
+         Hex.cpp    62            }
+         Hex.cpp    63    
+         Hex.cpp    64            asciiNumber[(int)(log10(rPointsPlayer1) + 1)] = '\0';
+    00000146 60A2                   MOV.L       @R10,R0
+    00000148 D34E                   MOV.L       L796+48,R3 ; __utod
+    0000014A 7FE8                   ADD         #-24,R15
+    0000014C 430B                   JSR         @R3
+    0000014E 2FF6                   MOV.L       R15,@-R15
+    00000150 E208                   MOV         #8,R2
+    00000152 32FC                   ADD         R15,R2
+    00000154 4D0B                   JSR         @R13
+    00000156 2F26                   MOV.L       R2,@-R15
+    00000158 7F0C                   ADD         #12,R15
+    0000015A E100                   MOV         #0,R1
+    0000015C 2F16                   MOV.L       R1,@-R15
+    0000015E D13F                   MOV.L       L796+8,R1  ; H'3FF00000
+    00000160 2F16                   MOV.L       R1,@-R15
+    00000162 63F3                   MOV         R15,R3
+    00000164 7310                   ADD         #16,R3
+    00000166 2F36                   MOV.L       R3,@-R15
+    00000168 A03E                   BRA         L785
+    0000016A 0009                   NOP
+    0000016C              L621:                             
+    0000016C DA47                   MOV.L       L796+56,R10; _rPointsPlayer2
+    0000016E 6BA2                   MOV.L       @R10,R11
+    00000170 2BB8                   TST         R11,R11
+    00000172 8903                   BT          L627
+         Hex.cpp    65        } else {
+         Hex.cpp    66            if (rPointsPlayer2 != 0)
+         Hex.cpp    67                asciiNumber = toArray(rPointsPlayer2);
+    00000174 BF44                   BSR         _toArray__Fi
+    00000176 64B3                   MOV         R11,R4
+    00000178 A001                   BRA         L628
+    0000017A 6E03                   MOV         R0,R14
+    0000017C              L627:                             
+         Hex.cpp    68            else
+         Hex.cpp    69                asciiNumber[0] = 0;
+    0000017C 2EC0                   MOV.B       R12,@R14
+    0000017E              L628:                             
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    6
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+         Hex.cpp    70    
+         Hex.cpp    71            for (size_t i = 0; i < (log10(rPointsPlayer2) + 1); ++i){
+    0000017E A005                   BRA         L629
+    00000180 6BC3                   MOV         R12,R11
+    00000182              L630:                             
+         Hex.cpp    72                asciiNumber[i] += 48;
+    00000182 60E3                   MOV         R14,R0
+    00000184 03BC                   MOV.B       @(R0,R11),R3
+    00000186 7330                   ADD         #48,R3
+    00000188 0B34                   MOV.B       R3,@(R0,R11)
+    0000018A 7B01                   ADD         #1,R11
+    0000018C              L629:                             
+    0000018C D23D                   MOV.L       L796+48,R2 ; __utod
+    0000018E 60B3                   MOV         R11,R0
+    00000190 7FF8                   ADD         #-8,R15
+    00000192 420B                   JSR         @R2
+    00000194 2FF6                   MOV.L       R15,@-R15
+    00000196 60A2                   MOV.L       @R10,R0
+    00000198 D33A                   MOV.L       L796+48,R3 ; __utod
+    0000019A 7FE8                   ADD         #-24,R15
+    0000019C 430B                   JSR         @R3
+    0000019E 2FF6                   MOV.L       R15,@-R15
+    000001A0 E208                   MOV         #8,R2
+    000001A2 32FC                   ADD         R15,R2
+    000001A4 4D0B                   JSR         @R13
+    000001A6 2F26                   MOV.L       R2,@-R15
+    000001A8 D22D                   MOV.L       L796+12,R2 ; __addd
+    000001AA 7F0C                   ADD         #12,R15
+    000001AC E100                   MOV         #0,R1
+    000001AE 2F16                   MOV.L       R1,@-R15
+    000001B0 D12A                   MOV.L       L796+8,R1  ; H'3FF00000
+    000001B2 2F16                   MOV.L       R1,@-R15
+    000001B4 63F3                   MOV         R15,R3
+    000001B6 7310                   ADD         #16,R3
+    000001B8 420B                   JSR         @R2
+    000001BA 2F36                   MOV.L       R3,@-R15
+    000001BC D132                   MOV.L       L796+52,R1 ; __ltd
+    000001BE 410B                   JSR         @R1
+    000001C0 0009                   NOP
+    000001C2 8800                   CMP/EQ      #0,R0
+    000001C4 8BDD                   BF          L630
+         Hex.cpp    73            }
+         Hex.cpp    74    
+         Hex.cpp    75            asciiNumber[(int)(log10(rPointsPlayer2) + 1)] = '\0';
+    000001C6 60A2                   MOV.L       @R10,R0
+    000001C8 D32E                   MOV.L       L796+48,R3 ; __utod
+    000001CA 7FE8                   ADD         #-24,R15
+    000001CC 430B                   JSR         @R3
+    000001CE 2FF6                   MOV.L       R15,@-R15
+    000001D0 E208                   MOV         #8,R2
+    000001D2 32FC                   ADD         R15,R2
+    000001D4 4D0B                   JSR         @R13
+    000001D6 2F26                   MOV.L       R2,@-R15
+    000001D8 7F0C                   ADD         #12,R15
+    000001DA E100                   MOV         #0,R1
+    000001DC 2F16                   MOV.L       R1,@-R15
+    000001DE D11F                   MOV.L       L796+8,R1  ; H'3FF00000
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    7
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000001E0 2F16                   MOV.L       R1,@-R15
+    000001E2 63F3                   MOV         R15,R3
+    000001E4 7310                   ADD         #16,R3
+    000001E6 2F36                   MOV.L       R3,@-R15
+    000001E8              L785:                             
+    000001E8 D21D                   MOV.L       L796+12,R2 ; __addd
+    000001EA 420B                   JSR         @R2
+    000001EC 0009                   NOP
+    000001EE D11D                   MOV.L       L796+16,R1 ; __dtoi
+    000001F0 410B                   JSR         @R1
+    000001F2 0009                   NOP
+    000001F4 0EC4                   MOV.B       R12,@(R0,R14)
+         Hex.cpp    76        }
+         Hex.cpp    77    
+         Hex.cpp    78        PrintMini(0, 15, asciiNumber, MINI_OR);
+    000001F6 E711                   MOV         #17,R7
+    000001F8 D325                   MOV.L       L796+60,R3 ; _PrintMini
+    000001FA 66E3                   MOV         R14,R6
+    000001FC E50F                   MOV         #15,R5
+    000001FE 430B                   JSR         @R3
+    00000200 E400                   MOV         #0,R4
+         Hex.cpp    79    
+         Hex.cpp    80        delete asciiNumber;
+    00000202 64E3                   MOV         R14,R4
+    00000204 4F26                   LDS.L       @R15+,PR
+    00000206 6AF6                   MOV.L       @R15+,R10
+    00000208 D21B                   MOV.L       L796+36,R2 ; ___dl__FPv
+    0000020A 6BF6                   MOV.L       @R15+,R11
+    0000020C 6CF6                   MOV.L       @R15+,R12
+    0000020E 6DF6                   MOV.L       @R15+,R13
+    00000210 422B                   JMP         @R2
+    00000212 6EF6                   MOV.L       @R15+,R14
+         Hex.cpp    81    }
+         Hex.cpp    82    
+         Hex.cpp    83    void printTurn(){
+    00000214              _printTurn__Fv:                  ; function: printTurn()
+                                                           ; frame size=20
+    00000214 2FE6                   MOV.L       R14,@-R15
+    00000216 4F22                   STS.L       PR,@-R15
+         Hex.cpp    84        if (turn == PLAYER_1)
+    00000218 D218                   MOV.L       L796+40,R2 ; _turn
+    0000021A 6322                   MOV.L       @R2,R3
+    0000021C 2338                   TST         R3,R3
+    0000021E 8F0C                   BF/S        L632
+    00000220 EE01                   MOV         #1,R14
+         Hex.cpp    85            ML_rectangle(0, 40, 6, 46, 1, ML_BLACK, ML_WHITE);
+    00000222 E300                   MOV         #0,R3
+    00000224 D11B                   MOV.L       L796+64,R1 ; _ML_rectangle
+    00000226 E72E                   MOV         #46,R7
+    00000228 2F36                   MOV.L       R3,@-R15
+    0000022A E606                   MOV         #6,R6
+    0000022C 2FE6                   MOV.L       R14,@-R15
+    0000022E E528                   MOV         #40,R5
+    00000230 2FE6                   MOV.L       R14,@-R15
+    00000232 410B                   JSR         @R1
+    00000234 6433                   MOV         R3,R4
+    00000236 A009                   BRA         L786
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    8
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000238 0009                   NOP
+    0000023A              L632:                             
+         Hex.cpp    86        else
+         Hex.cpp    87            ML_rectangle(0, 40, 6, 46, 1, ML_BLACK, ML_BLACK);
+    0000023A E72E                   MOV         #46,R7
+    0000023C D315                   MOV.L       L796+64,R3 ; _ML_rectangle
+    0000023E E606                   MOV         #6,R6
+    00000240 2FE6                   MOV.L       R14,@-R15
+    00000242 E528                   MOV         #40,R5
+    00000244 2FE6                   MOV.L       R14,@-R15
+    00000246 2FE6                   MOV.L       R14,@-R15
+    00000248 430B                   JSR         @R3
+    0000024A E400                   MOV         #0,R4
+    0000024C              L786:                             
+         Hex.cpp    88    }
+    0000024C 7F0C                   ADD         #12,R15
+    0000024E 4F26                   LDS.L       @R15+,PR
+    00000250 000B                   RTS
+    00000252 6EF6                   MOV.L       @R15+,R14
+    00000254              L796:                             
+    00000254 <00000000>             .DATA.L     __itod
+    00000258 <00000000>             .DATA.L     _log10
+    0000025C 3FF00000               .DATA.L     H'3FF00000
+    00000260 <00000000>             .DATA.L     __addd
+    00000264 <00000000>             .DATA.L     __dtoi
+    00000268 <00000000>             .DATA.L     _calloc
+    0000026C <00000000>             .DATA.L     __modls
+    00000270 <00000000>             .DATA.L     __divls
+    00000274 <00000000>             .DATA.L     ___nw__FUl
+    00000278 <00000000>             .DATA.L     ___dl__FPv
+    0000027C <00000000>             .DATA.L     _turn
+    00000280 <00000000>             .DATA.L     _rPointsPlayer1
+    00000284 <00000000>             .DATA.L     __utod
+    00000288 <00000000>             .DATA.L     __ltd
+    0000028C <00000000>             .DATA.L     _rPointsPlayer2
+    00000290 <00000000>             .DATA.L     _PrintMini
+    00000294 <00000000>             .DATA.L     _ML_rectangle
+         Hex.cpp    89    
+         Hex.cpp    90    void updateDisplay(){
+    00000298              _updateDisplay__Fv:              ; function: updateDisplay()
+                                                           ; frame size=128
+                                                           ; used runtime library name:
+                                                           ; __quick_mvn
+    00000298 2FE6                   MOV.L       R14,@-R15
+    0000029A 4F22                   STS.L       PR,@-R15
+         Hex.cpp    91        int timeAt = RTC_getTicks();
+    0000029C D33B                   MOV.L       L797+2,R3  ; _RTC_getTicks
+    0000029E 7F88                   ADD         #-120,R15
+    000002A0 430B                   JSR         @R3
+    000002A2 0009                   NOP
+         Hex.cpp    92    
+         Hex.cpp    93        if (timeAt - timeRefCurrent > 15){
+    000002A4 D13A                   MOV.L       L797+6,R1  ; _timeRefCurrent
+    000002A6 6203                   MOV         R0,R2
+    000002A8 6312                   MOV.L       @R1,R3
+    000002AA 6E03                   MOV         R0,R14
+    000002AC 3238                   SUB         R3,R2
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    9
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000002AE E00F                   MOV         #15,R0
+    000002B0 3207                   CMP/GT      R0,R2
+    000002B2 8B05                   BF          L635
+         Hex.cpp    94            manager.printCurrentSelection();
+    000002B4 D437                   MOV.L       L797+10,R4 ; _manager
+    000002B6 D238                   MOV.L       L797+14,R2 ; _printCurrentSelection__17MapDisplayManagerFv
+    000002B8 420B                   JSR         @R2
+    000002BA 0009                   NOP
+         Hex.cpp    95            timeRefCurrent = timeAt;
+    000002BC D334                   MOV.L       L797+6,R3  ; _timeRefCurrent
+    000002BE 23E2                   MOV.L       R14,@R3
+    000002C0              L635:                             
+         Hex.cpp    96        }
+         Hex.cpp    97    
+         Hex.cpp    98        if (timeAt - timeRefLocked > 75){
+    000002C0 D136                   MOV.L       L797+18,R1 ; _timeRefLocked
+    000002C2 62E3                   MOV         R14,R2
+    000002C4 6312                   MOV.L       @R1,R3
+    000002C6 E04B                   MOV         #75,R0
+    000002C8 3238                   SUB         R3,R2
+    000002CA 3207                   CMP/GT      R0,R2
+    000002CC 8B05                   BF          L636
+         Hex.cpp    99            manager.printLockedSelection();
+    000002CE D431                   MOV.L       L797+10,R4 ; _manager
+    000002D0 D233                   MOV.L       L797+22,R2 ; _printLockedSelection__17MapDisplayManagerFv
+    000002D2 420B                   JSR         @R2
+    000002D4 0009                   NOP
+         Hex.cpp   100            timeRefLocked = timeAt;
+    000002D6 D331                   MOV.L       L797+18,R3 ; _timeRefLocked
+    000002D8 23E2                   MOV.L       R14,@R3
+    000002DA              L636:                             
+         Hex.cpp   101        }
+         Hex.cpp   102    
+         Hex.cpp   103        ML_clear_vram();
+    000002DA D232                   MOV.L       L797+26,R2 ; _ML_clear_vram
+    000002DC 420B                   JSR         @R2
+    000002DE 0009                   NOP
+         Hex.cpp   104            if (reinforcement)
+    000002E0 D231                   MOV.L       L797+30,R2 ; _reinforcement
+    000002E2 6122                   MOV.L       @R2,R1
+    000002E4 2118                   TST         R1,R1
+    000002E6 8901                   BT          L637
+         Hex.cpp   105                printReinforcementPoints();
+    000002E8 BEF0                   BSR         _printReinforcementPoints__Fv
+    000002EA 0009                   NOP
+    000002EC              L637:                             
+         Hex.cpp   106            printTurn();
+    000002EC BF92                   BSR         _printTurn__Fv
+    000002EE 0009                   NOP
+         Hex.cpp   107            manager.loadMap(points);
+    000002F0 D22E                   MOV.L       L797+34,R2 ; _points
+    000002F2 61F3                   MOV         R15,R1
+    000002F4 D32E                   MOV.L       L797+38,R3 ; __quick_mvn
+    000002F6 430B                   JSR         @R3
+    000002F8 E078                   MOV         #120,R0
+    000002FA D426                   MOV.L       L797+10,R4 ; _manager
+    000002FC D12D                   MOV.L       L797+42,R1 ; _loadMap__17MapDisplayManagerF13PointsManager
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   10
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000002FE 410B                   JSR         @R1
+    00000300 65F3                   MOV         R15,R5
+    00000302 E502                   MOV         #2,R5
+    00000304 D32C                   MOV.L       L797+46,R3 ; ___dt__13PointsManagerFv
+    00000306 430B                   JSR         @R3
+    00000308 64F3                   MOV         R15,R4
+         Hex.cpp   108        ML_display_vram();
+    0000030A D22C                   MOV.L       L797+50,R2 ; _ML_display_vram
+    0000030C 420B                   JSR         @R2
+    0000030E 0009                   NOP
+         Hex.cpp   109    }
+    00000310 7F78                   ADD         #120,R15
+    00000312 4F26                   LDS.L       @R15+,PR
+    00000314 000B                   RTS
+    00000316 6EF6                   MOV.L       @R15+,R14
+         Hex.cpp   110    
+         Hex.cpp   111    int randomInt(unsigned int rangeMin, unsigned int rangeMax){
+    00000318              _randomInt__FUiT1:               ; function: randomInt(unsigned int, unsigned int)
+                                                           ; frame size=12
+                                                           ; used runtime library name:
+                                                           ; __modlu
+    00000318 4F22                   STS.L       PR,@-R15
+    0000031A 7FF8                   ADD         #-8,R15
+         Hex.cpp   112        return rand() % (rangeMax + 1 - rangeMin) + rangeMin;
+    0000031C D328                   MOV.L       L797+54,R3 ; _rand
+    0000031E 2F42                   MOV.L       R4,@R15
+    00000320 430B                   JSR         @R3
+    00000322 1F51                   MOV.L       R5,@(4,R15)
+    00000324 63F2                   MOV.L       @R15,R3
+    00000326 6103                   MOV         R0,R1
+    00000328 52F1                   MOV.L       @(4,R15),R2
+    0000032A 3238                   SUB         R3,R2
+    0000032C 7201                   ADD         #1,R2
+    0000032E 6023                   MOV         R2,R0
+    00000330 D224                   MOV.L       L797+58,R2 ; __modlu
+    00000332 420B                   JSR         @R2
+    00000334 0009                   NOP
+         Hex.cpp   113    }
+    00000336 7F08                   ADD         #8,R15
+    00000338 4F26                   LDS.L       @R15+,PR
+    0000033A 000B                   RTS
+    0000033C 303C                   ADD         R3,R0
+         Hex.cpp   114    
+         Hex.cpp   115    bool attackWin(int source, int target){
+    0000033E              _attackWin__FiT1:                ; function: attackWin(int, int)
+                                                           ; frame size=4
+         Hex.cpp   116        int offset = source - target;
+    0000033E 3458                   SUB         R5,R4
+    00000340 4F22                   STS.L       PR,@-R15
+         Hex.cpp   117    
+         Hex.cpp   118        if (offset > 1){
+    00000342 E301                   MOV         #1,R3
+    00000344 3437                   CMP/GT      R3,R4
+    00000346 8B02                   BF          L640
+         Hex.cpp   119            return true;
+    00000348 4F26                   LDS.L       @R15+,PR
+    0000034A 000B                   RTS
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   11
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    0000034C E001                   MOV         #1,R0
+    0000034E              L640:                             
+         Hex.cpp   120        } else if (offset == 1){
+    0000034E 6043                   MOV         R4,R0
+    00000350 8801                   CMP/EQ      #1,R0
+    00000352 8B04                   BF          L643
+         Hex.cpp   121            return randomInt(0, 100) >= 25;
+    00000354 E564                   MOV         #100,R5
+    00000356 BFDF                   BSR         _randomInt__FUiT1
+    00000358 E400                   MOV         #0,R4
+    0000035A A00E                   BRA         L788
+    0000035C E319                   MOV         #25,R3
+    0000035E              L643:                             
+         Hex.cpp   122        } else if (offset == 0){
+    0000035E 2448                   TST         R4,R4
+    00000360 8B04                   BF          L645
+         Hex.cpp   123            return randomInt(0, 100) >= 50;
+    00000362 E564                   MOV         #100,R5
+    00000364 BFD8                   BSR         _randomInt__FUiT1
+    00000366 E400                   MOV         #0,R4
+    00000368 A007                   BRA         L788
+    0000036A E332                   MOV         #50,R3
+    0000036C              L645:                             
+         Hex.cpp   124        } else if (offset == -1){
+    0000036C 6043                   MOV         R4,R0
+    0000036E 88FF                   CMP/EQ      #-1,R0
+    00000370 8B07                   BF          L647
+         Hex.cpp   125            return randomInt(0, 100) >= 75;
+    00000372 E564                   MOV         #100,R5
+    00000374 BFD0                   BSR         _randomInt__FUiT1
+    00000376 E400                   MOV         #0,R4
+    00000378 E34B                   MOV         #75,R3
+    0000037A              L788:                             
+    0000037A 3033                   CMP/GE      R3,R0
+    0000037C 4F26                   LDS.L       @R15+,PR
+    0000037E 000B                   RTS
+    00000380 0029                   MOVT        R0
+    00000382              L647:                             
+         Hex.cpp   126        } else {
+         Hex.cpp   127            return false;
+    00000382 E000                   MOV         #0,R0
+         Hex.cpp   128        }
+         Hex.cpp   129    }
+    00000384              L641:                             
+    00000384 4F26                   LDS.L       @R15+,PR
+    00000386 000B                   RTS
+    00000388 0009                   NOP
+    0000038A              L797:                             
+    0000038A 0000                   .DATA.W     0
+    0000038C <00000000>             .DATA.L     _RTC_getTicks
+    00000390 <00000000>             .DATA.L     _timeRefCurrent
+    00000394 <00000000>             .DATA.L     _manager
+    00000398 <00000000>             .DATA.L     _printCurrentSelection__17MapDisplayManagerFv
+    0000039C <00000000>             .DATA.L     _timeRefLocked
+    000003A0 <00000000>             .DATA.L     _printLockedSelection__17MapDisplayManagerFv
+    000003A4 <00000000>             .DATA.L     _ML_clear_vram
+    000003A8 <00000000>             .DATA.L     _reinforcement
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   12
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000003AC <00000000>             .DATA.L     _points
+    000003B0 <00000000>             .DATA.L     __quick_mvn
+    000003B4 <00000000>             .DATA.L     _loadMap__17MapDisplayManagerF13PointsManager
+    000003B8 <00000000>             .DATA.L     ___dt__13PointsManagerFv
+    000003BC <00000000>             .DATA.L     _ML_display_vram
+    000003C0 <00000000>             .DATA.L     _rand
+    000003C4 <00000000>             .DATA.L     __modlu
+         Hex.cpp   130    
+         Hex.cpp   131    void applyDamageFrom(PlayerType attacker){
+    000003C8              _applyDamageFrom__F10PlayerType: ; function: applyDamageFrom(PlayerType)
+                                                           ; frame size=40
+    000003C8 2FE6                   MOV.L       R14,@-R15
+    000003CA 2FD6                   MOV.L       R13,@-R15
+    000003CC 2FC6                   MOV.L       R12,@-R15
+    000003CE 2FB6                   MOV.L       R11,@-R15
+    000003D0 2FA6                   MOV.L       R10,@-R15
+    000003D2 2F96                   MOV.L       R9,@-R15
+    000003D4 2F86                   MOV.L       R8,@-R15
+    000003D6 4F22                   STS.L       PR,@-R15
+    000003D8 D949                   MOV.L       L798+2,R9  ; _setNumberAt__13PointsManagerFUlN21
+    000003DA 7FFC                   ADD         #-4,R15
+         Hex.cpp   132        int targetLine = manager.getCurrentLine();
+    000003DC 908F                   MOV.W       L798,R0    ; H'0080
+    000003DE 2F42                   MOV.L       R4,@R15
+    000003E0 D448                   MOV.L       L798+6,R4  ; _manager
+    000003E2 0D4E                   MOV.L       @(R0,R4),R13
+         Hex.cpp   133        int targetColumn = manager.getCurrentColumn();
+         Hex.cpp   134    
+         Hex.cpp   135        int sourceLine = manager.getLockedLine();
+         Hex.cpp   136        int sourceColumn = manager.getLockedColumn();
+         Hex.cpp   137    
+         Hex.cpp   138        int offset = points.numberAt(sourceLine, sourceColumn) - points.numberAt(targetLine, targetColumn);
+    000003E4 DC48                   MOV.L       L798+10,R12; _numberAt__13PointsManagerFUlT1
+    000003E6 7004                   ADD         #4,R0
+    000003E8 0E4E                   MOV.L       @(R0,R4),R14
+    000003EA 7010                   ADD         #16,R0
+    000003EC 0B4E                   MOV.L       @(R0,R4),R11
+    000003EE 7004                   ADD         #4,R0
+    000003F0 0A4E                   MOV.L       @(R0,R4),R10
+    000003F2 66A3                   MOV         R10,R6
+    000003F4 D445                   MOV.L       L798+14,R4 ; _points
+    000003F6 4C0B                   JSR         @R12
+    000003F8 65B3                   MOV         R11,R5
+    000003FA 6803                   MOV         R0,R8
+    000003FC D443                   MOV.L       L798+14,R4 ; _points
+    000003FE 66E3                   MOV         R14,R6
+    00000400 4C0B                   JSR         @R12
+    00000402 65D3                   MOV         R13,R5
+         Hex.cpp   139    
+         Hex.cpp   140        if (points.numberAt(targetLine, targetColumn) == 0){
+    00000404 D441                   MOV.L       L798+14,R4 ; _points
+    00000406 3808                   SUB         R0,R8
+    00000408 66E3                   MOV         R14,R6
+    0000040A 4C0B                   JSR         @R12
+    0000040C 65D3                   MOV         R13,R5
+    0000040E 2008                   TST         R0,R0
+    00000410 8B0B                   BF          L649
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   13
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+         Hex.cpp   141            points.setNumberAt(targetLine, targetColumn, points.numberAt(sourceLine, sourceColumn) - 1);
+    00000412 66A3                   MOV         R10,R6
+    00000414 D43D                   MOV.L       L798+14,R4 ; _points
+    00000416 4C0B                   JSR         @R12
+    00000418 65B3                   MOV         R11,R5
+    0000041A 6703                   MOV         R0,R7
+    0000041C D43B                   MOV.L       L798+14,R4 ; _points
+    0000041E 66E3                   MOV         R14,R6
+    00000420 77FF                   ADD         #-1,R7
+    00000422 490B                   JSR         @R9
+    00000424 65D3                   MOV         R13,R5
+    00000426 A022                   BRA         L491
+    00000428 0009                   NOP
+    0000042A              L649:                             
+         Hex.cpp   142            manager.changeOwner(targetLine, targetColumn, attacker);
+         Hex.cpp   143        } else if (attackWin(points.numberAt(sourceLine, sourceColumn), points.numberAt(targetLine, targetColu
+                         +mn))){
+    0000042A 66E3                   MOV         R14,R6
+    0000042C D437                   MOV.L       L798+14,R4 ; _points
+    0000042E 4C0B                   JSR         @R12
+    00000430 65D3                   MOV         R13,R5
+    00000432 66A3                   MOV         R10,R6
+    00000434 D435                   MOV.L       L798+14,R4 ; _points
+    00000436 2F06                   MOV.L       R0,@-R15
+    00000438 4C0B                   JSR         @R12
+    0000043A 65B3                   MOV         R11,R5
+    0000043C 6403                   MOV         R0,R4
+    0000043E BF7E                   BSR         _attackWin__FiT1
+    00000440 65F6                   MOV.L       @R15+,R5
+    00000442 2008                   TST         R0,R0
+    00000444 891B                   BT          L651
+         Hex.cpp   144            if (offset > 1)
+    00000446 E201                   MOV         #1,R2
+    00000448 3827                   CMP/GT      R2,R8
+    0000044A 8B0B                   BF          L652
+         Hex.cpp   145                points.setNumberAt(targetLine, targetColumn, points.numberAt(sourceLine, sourceColumn) - point
+                         +s.numberAt(targetLine, targetColumn));
+    0000044C D42F                   MOV.L       L798+14,R4 ; _points
+    0000044E 66A3                   MOV         R10,R6
+    00000450 4C0B                   JSR         @R12
+    00000452 65B3                   MOV         R11,R5
+    00000454 2F06                   MOV.L       R0,@-R15
+    00000456 66E3                   MOV         R14,R6
+    00000458 D42C                   MOV.L       L798+14,R4 ; _points
+    0000045A 4C0B                   JSR         @R12
+    0000045C 65D3                   MOV         R13,R5
+    0000045E 67F6                   MOV.L       @R15+,R7
+    00000460 A001                   BRA         L789
+    00000462 3708                   SUB         R0,R7
+    00000464              L652:                             
+         Hex.cpp   146            else
+         Hex.cpp   147                points.setNumberAt(targetLine, targetColumn, 1);
+    00000464 6723                   MOV         R2,R7
+    00000466              L789:                             
+    00000466 66E3                   MOV         R14,R6
+    00000468 D428                   MOV.L       L798+14,R4 ; _points
+    0000046A 490B                   JSR         @R9
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   14
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    0000046C 65D3                   MOV         R13,R5
+    0000046E              L491:
+         Hex.cpp   148    
+         Hex.cpp   149            manager.changeOwner(targetLine, targetColumn, attacker);
+    0000046E 66E3                   MOV         R14,R6
+    00000470 D424                   MOV.L       L798+6,R4  ; _manager
+    00000472 67F2                   MOV.L       @R15,R7
+    00000474 D326                   MOV.L       L798+18,R3 ; _changeOwner__17MapDisplayManagerFUlT110PlayerType
+    00000476 430B                   JSR         @R3
+    00000478 65D3                   MOV         R13,R5
+    0000047A A014                   BRA         L650
+    0000047C 0009                   NOP
+    0000047E              L651:                             
+         Hex.cpp   150        } else {
+         Hex.cpp   151            if (offset < -1)
+    0000047E E3FF                   MOV         #-1,R3
+    00000480 3833                   CMP/GE      R3,R8
+    00000482 890B                   BT          L655
+         Hex.cpp   152                points.setNumberAt(targetLine, targetColumn, points.numberAt(targetLine, targetColumn) - point
+                         +s.numberAt(sourceLine, sourceColumn));
+    00000484 D421                   MOV.L       L798+14,R4 ; _points
+    00000486 66E3                   MOV         R14,R6
+    00000488 4C0B                   JSR         @R12
+    0000048A 65D3                   MOV         R13,R5
+    0000048C 2F06                   MOV.L       R0,@-R15
+    0000048E 66A3                   MOV         R10,R6
+    00000490 D41E                   MOV.L       L798+14,R4 ; _points
+    00000492 4C0B                   JSR         @R12
+    00000494 65B3                   MOV         R11,R5
+    00000496 67F6                   MOV.L       @R15+,R7
+    00000498 A001                   BRA         L790
+    0000049A 3708                   SUB         R0,R7
+    0000049C              L655:                             
+         Hex.cpp   153            else
+         Hex.cpp   154                points.setNumberAt(targetLine, targetColumn, 1);
+    0000049C E701                   MOV         #1,R7
+    0000049E              L790:                             
+    0000049E 66E3                   MOV         R14,R6
+    000004A0 D41A                   MOV.L       L798+14,R4 ; _points
+    000004A2 490B                   JSR         @R9
+    000004A4 65D3                   MOV         R13,R5
+    000004A6              L650:                             
+         Hex.cpp   155        }
+         Hex.cpp   156    
+         Hex.cpp   157        points.setNumberAt(sourceLine, sourceColumn, 1);
+    000004A6 E701                   MOV         #1,R7
+    000004A8 D418                   MOV.L       L798+14,R4 ; _points
+    000004AA 66A3                   MOV         R10,R6
+    000004AC 490B                   JSR         @R9
+    000004AE 65B3                   MOV         R11,R5
+         Hex.cpp   158    }
+    000004B0 7F04                   ADD         #4,R15
+    000004B2 4F26                   LDS.L       @R15+,PR
+    000004B4 68F6                   MOV.L       @R15+,R8
+    000004B6 69F6                   MOV.L       @R15+,R9
+    000004B8 6AF6                   MOV.L       @R15+,R10
+    000004BA 6BF6                   MOV.L       @R15+,R11
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   15
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000004BC 6CF6                   MOV.L       @R15+,R12
+    000004BE 6DF6                   MOV.L       @R15+,R13
+    000004C0 000B                   RTS
+    000004C2 6EF6                   MOV.L       @R15+,R14
+         Hex.cpp   159    
+         Hex.cpp   160    void neighbourArray(int i, int j, int map[][6], int array[]){
+    000004C4              _neighbourArray__FiT1PA6_iPi:    ; function: neighbourArray(int, int, int (*)[6], int *)
+                                                           ; frame size=32
+    000004C4 2FE6                   MOV.L       R14,@-R15
+    000004C6 6343                   MOV         R4,R3
+    000004C8 2FD6                   MOV.L       R13,@-R15
+    000004CA 6E53                   MOV         R5,R14
+    000004CC 2FC6                   MOV.L       R12,@-R15
+    000004CE 6D43                   MOV         R4,R13
+    000004D0 2FB6                   MOV.L       R11,@-R15
+    000004D2 4E08                   SHLL2       R14
+    000004D4 2FA6                   MOV.L       R10,@-R15
+    000004D6 EB05                   MOV         #5,R11
+    000004D8 2F96                   MOV.L       R9,@-R15
+    000004DA 7DFF                   ADD         #-1,R13
+    000004DC 2F86                   MOV.L       R8,@-R15
+    000004DE 6A73                   MOV         R7,R10
+    000004E0 7FFC                   ADD         #-4,R15
+    000004E2 7A14                   ADD         #20,R10
+    000004E4 7301                   ADD         #1,R3
+    000004E6 6873                   MOV         R7,R8
+    000004E8 2F32                   MOV.L       R3,@R15
+    000004EA 6973                   MOV         R7,R9
+    000004EC 7808                   ADD         #8,R8
+    000004EE 790C                   ADD         #12,R9
+    000004F0 6C53                   MOV         R5,R12
+    000004F2 6043                   MOV         R4,R0
+    000004F4 4011                   CMP/PZ      R0
+    000004F6 8F0D                   BF/S        L659
+    000004F8 7C01                   ADD         #1,R12
+    000004FA A010                   BRA         L660
+    000004FC C901                   AND         #1,R0
+    000004FE              L798:                             
+    000004FE 0080                   .DATA.W     H'0080
+    00000500 <00000000>             .DATA.L     _setNumberAt__13PointsManagerFUlN21
+    00000504 <00000000>             .DATA.L     _manager
+    00000508 <00000000>             .DATA.L     _numberAt__13PointsManagerFUlT1
+    0000050C <00000000>             .DATA.L     _points
+    00000510 <00000000>             .DATA.L     _changeOwner__17MapDisplayManagerFUlT110PlayerType
+    00000514              L659:                             
+    00000514 6007                   NOT         R0,R0
+    00000516 7001                   ADD         #1,R0
+    00000518 C901                   AND         #1,R0
+    0000051A 6007                   NOT         R0,R0
+    0000051C 7001                   ADD         #1,R0
+    0000051E              L660:                             
+    0000051E 2008                   TST         R0,R0
+    00000520 8B4D                   BF          L658
+         Hex.cpp   161            if (i%2 == 0){
+         Hex.cpp   162                    if (i-1 >= 0){
+    00000522 4D11                   CMP/PZ      R13
+    00000524 8B1E                   BF          L661
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   16
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+         Hex.cpp   163                            array[UP_R] = (map[i-1][j] != 0);
+    00000526 60D3                   MOV         R13,R0
+    00000528 62D3                   MOV         R13,R2
+    0000052A 4000                   SHLL        R0
+    0000052C 302C                   ADD         R2,R0
+    0000052E 4008                   SHLL2       R0
+    00000530 4000                   SHLL        R0
+    00000532 30EC                   ADD         R14,R0
+    00000534 016E                   MOV.L       @(R0,R6),R1
+         Hex.cpp   164                            if (j-1 >= 0)
+    00000536 6353                   MOV         R5,R3
+    00000538 2118                   TST         R1,R1
+    0000053A 0029                   MOVT        R0
+    0000053C CA01                   XOR         #1,R0
+    0000053E 73FF                   ADD         #-1,R3
+    00000540 4311                   CMP/PZ      R3
+    00000542 8F0F                   BF/S        L661
+    00000544 2702                   MOV.L       R0,@R7
+         Hex.cpp   165                                    array[UP_L] = (map[i-1][j-1] != 0);
+    00000546 60D3                   MOV         R13,R0
+    00000548 63D3                   MOV         R13,R3
+    0000054A 4000                   SHLL        R0
+    0000054C 303C                   ADD         R3,R0
+    0000054E 4008                   SHLL2       R0
+    00000550 4000                   SHLL        R0
+    00000552 6253                   MOV         R5,R2
+    00000554 72FF                   ADD         #-1,R2
+    00000556 4208                   SHLL2       R2
+    00000558 302C                   ADD         R2,R0
+    0000055A 036E                   MOV.L       @(R0,R6),R3
+    0000055C 2338                   TST         R3,R3
+    0000055E 0029                   MOVT        R0
+    00000560 CA01                   XOR         #1,R0
+    00000562 2A02                   MOV.L       R0,@R10
+    00000564              L661:                             
+         Hex.cpp   166                    }
+         Hex.cpp   167    
+         Hex.cpp   168                    if (i+1 < 5){
+    00000564 63F2                   MOV.L       @R15,R3
+    00000566 33B3                   CMP/GE      R11,R3
+    00000568 8924                   BT          L665
+         Hex.cpp   169                            array[BOTTOM_R] = (map[i+1][j] != 0);
+    0000056A 6043                   MOV         R4,R0
+    0000056C 6343                   MOV         R4,R3
+    0000056E 4000                   SHLL        R0
+    00000570 303C                   ADD         R3,R0
+    00000572 4008                   SHLL2       R0
+    00000574 4000                   SHLL        R0
+    00000576 306C                   ADD         R6,R0
+    00000578 6203                   MOV         R0,R2
+    0000057A 7218                   ADD         #24,R2
+    0000057C 32EC                   ADD         R14,R2
+         Hex.cpp   170                            if (j-1 >= 0)
+    0000057E 6353                   MOV         R5,R3
+    00000580 6022                   MOV.L       @R2,R0
+    00000582 73FF                   ADD         #-1,R3
+    00000584 2008                   TST         R0,R0
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   17
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000586 0029                   MOVT        R0
+    00000588 CA01                   XOR         #1,R0
+    0000058A 4311                   CMP/PZ      R3
+    0000058C 8F12                   BF/S        L665
+    0000058E 2802                   MOV.L       R0,@R8
+         Hex.cpp   171                                    array[BOTTOM_L] = (map[i+1][j-1] != 0);
+    00000590 6043                   MOV         R4,R0
+    00000592 6343                   MOV         R4,R3
+    00000594 4000                   SHLL        R0
+    00000596 303C                   ADD         R3,R0
+    00000598 4008                   SHLL2       R0
+    0000059A 4000                   SHLL        R0
+    0000059C 306C                   ADD         R6,R0
+    0000059E 6253                   MOV         R5,R2
+    000005A0 72FF                   ADD         #-1,R2
+    000005A2 4208                   SHLL2       R2
+    000005A4 6303                   MOV         R0,R3
+    000005A6 7318                   ADD         #24,R3
+    000005A8 323C                   ADD         R3,R2
+    000005AA 6022                   MOV.L       @R2,R0
+    000005AC 2008                   TST         R0,R0
+    000005AE 0029                   MOVT        R0
+    000005B0 CA01                   XOR         #1,R0
+    000005B2 2902                   MOV.L       R0,@R9
+    000005B4              L665:                             
+         Hex.cpp   172                    }
+         Hex.cpp   173    
+         Hex.cpp   174                    if (j+1 < 6)
+    000005B4 E306                   MOV         #6,R3
+    000005B6 3C33                   CMP/GE      R3,R12
+    000005B8 8B42                   BF          L492
+         Hex.cpp   175                            array[R] = (map[i][j+1] != 0);
+    000005BA A04E                   BRA         L670
+    000005BC 0009                   NOP
+    000005BE              L658:                             
+         Hex.cpp   176            } else {
+         Hex.cpp   177                    if (i-1 >= 0){
+    000005BE 4D11                   CMP/PZ      R13
+    000005C0 8B19                   BF          L671
+         Hex.cpp   178                            array[UP_L] = (map[i-1][j] != 0);
+    000005C2 60D3                   MOV         R13,R0
+    000005C4 62D3                   MOV         R13,R2
+    000005C6 4000                   SHLL        R0
+    000005C8 302C                   ADD         R2,R0
+    000005CA 4008                   SHLL2       R0
+    000005CC 4000                   SHLL        R0
+    000005CE 30EC                   ADD         R14,R0
+    000005D0 016E                   MOV.L       @(R0,R6),R1
+    000005D2 2118                   TST         R1,R1
+    000005D4 0029                   MOVT        R0
+    000005D6 CA01                   XOR         #1,R0
+         Hex.cpp   179                            if (j+1 < 5)
+    000005D8 3CB3                   CMP/GE      R11,R12
+    000005DA 8D0C                   BT/S        L671
+    000005DC 2A02                   MOV.L       R0,@R10
+         Hex.cpp   180                                    array[UP_R] = (map[i-1][j+1] != 0);
+    000005DE 63D3                   MOV         R13,R3
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   18
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000005E0 4D00                   SHLL        R13
+    000005E2 3D3C                   ADD         R3,R13
+    000005E4 4D08                   SHLL2       R13
+    000005E6 4D00                   SHLL        R13
+    000005E8 3DEC                   ADD         R14,R13
+    000005EA 3D6C                   ADD         R6,R13
+    000005EC 50D1                   MOV.L       @(4,R13),R0
+    000005EE 2008                   TST         R0,R0
+    000005F0 0029                   MOVT        R0
+    000005F2 CA01                   XOR         #1,R0
+    000005F4 2702                   MOV.L       R0,@R7
+    000005F6              L671:                             
+         Hex.cpp   181                    }
+         Hex.cpp   182    
+         Hex.cpp   183                    if (i+1 < 5){
+    000005F6 63F2                   MOV.L       @R15,R3
+    000005F8 33B3                   CMP/GE      R11,R3
+    000005FA 891F                   BT          L675
+         Hex.cpp   184                            array[BOTTOM_L] = (map[i+1][j] != 0);
+    000005FC 6043                   MOV         R4,R0
+    000005FE 6343                   MOV         R4,R3
+    00000600 4000                   SHLL        R0
+    00000602 303C                   ADD         R3,R0
+    00000604 4008                   SHLL2       R0
+    00000606 4000                   SHLL        R0
+    00000608 306C                   ADD         R6,R0
+    0000060A 6203                   MOV         R0,R2
+    0000060C 7218                   ADD         #24,R2
+    0000060E 32EC                   ADD         R14,R2
+    00000610 6022                   MOV.L       @R2,R0
+    00000612 2008                   TST         R0,R0
+    00000614 0029                   MOVT        R0
+    00000616 CA01                   XOR         #1,R0
+         Hex.cpp   185                            if (j+1 < 5)
+    00000618 3CB3                   CMP/GE      R11,R12
+    0000061A 8D1E                   BT/S        L670
+    0000061C 2902                   MOV.L       R0,@R9
+         Hex.cpp   186                                    array[BOTTOM_R] = (map[i+1][j+1] != 0);
+    0000061E 6243                   MOV         R4,R2
+    00000620 6343                   MOV         R4,R3
+    00000622 4200                   SHLL        R2
+    00000624 323C                   ADD         R3,R2
+    00000626 4208                   SHLL2       R2
+    00000628 4200                   SHLL        R2
+    0000062A 326C                   ADD         R6,R2
+    0000062C 6123                   MOV         R2,R1
+    0000062E 7118                   ADD         #24,R1
+    00000630 31EC                   ADD         R14,R1
+    00000632 5011                   MOV.L       @(4,R1),R0
+    00000634 2008                   TST         R0,R0
+    00000636 0029                   MOVT        R0
+    00000638 CA01                   XOR         #1,R0
+    0000063A 2802                   MOV.L       R0,@R8
+    0000063C              L675:                             
+         Hex.cpp   187                    }
+         Hex.cpp   188    
+         Hex.cpp   189                    if (j+1 < 5)
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   19
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    0000063C 3CB3                   CMP/GE      R11,R12
+    0000063E 890C                   BT          L670
+    00000640              L492:
+         Hex.cpp   190                            array[R] = (map[i][j+1] != 0);
+    00000640 6243                   MOV         R4,R2
+    00000642 6343                   MOV         R4,R3
+    00000644 4200                   SHLL        R2
+    00000646 323C                   ADD         R3,R2
+    00000648 4208                   SHLL2       R2
+    0000064A 4200                   SHLL        R2
+    0000064C 32EC                   ADD         R14,R2
+    0000064E 326C                   ADD         R6,R2
+    00000650 5021                   MOV.L       @(4,R2),R0
+    00000652 2008                   TST         R0,R0
+    00000654 0029                   MOVT        R0
+    00000656 CA01                   XOR         #1,R0
+    00000658 1701                   MOV.L       R0,@(4,R7)
+    0000065A              L670:                             
+         Hex.cpp   191            }
+         Hex.cpp   192    
+         Hex.cpp   193            if (j-1 >= 0)
+    0000065A 6353                   MOV         R5,R3
+    0000065C 73FF                   ADD         #-1,R3
+    0000065E 4311                   CMP/PZ      R3
+    00000660 8B0D                   BF          L683
+         Hex.cpp   194                    array[L] = (map[i][j-1] != 0);
+    00000662 6053                   MOV         R5,R0
+    00000664 70FF                   ADD         #-1,R0
+    00000666 4008                   SHLL2       R0
+    00000668 6343                   MOV         R4,R3
+    0000066A 4400                   SHLL        R4
+    0000066C 343C                   ADD         R3,R4
+    0000066E 4408                   SHLL2       R4
+    00000670 4400                   SHLL        R4
+    00000672 304C                   ADD         R4,R0
+    00000674 026E                   MOV.L       @(R0,R6),R2
+    00000676 2228                   TST         R2,R2
+    00000678 0029                   MOVT        R0
+    0000067A CA01                   XOR         #1,R0
+    0000067C 1704                   MOV.L       R0,@(16,R7)
+         Hex.cpp   195    }
+    0000067E              L683:                             
+    0000067E 7F04                   ADD         #4,R15
+    00000680 68F6                   MOV.L       @R15+,R8
+    00000682 69F6                   MOV.L       @R15+,R9
+    00000684 6AF6                   MOV.L       @R15+,R10
+    00000686 6BF6                   MOV.L       @R15+,R11
+    00000688 6CF6                   MOV.L       @R15+,R12
+    0000068A 6DF6                   MOV.L       @R15+,R13
+    0000068C 000B                   RTS
+    0000068E 6EF6                   MOV.L       @R15+,R14
+         Hex.cpp   196    
+         Hex.cpp   197    void randomMap(int map[][6]){
+    00000690              _randomMap__FPA6_i:              ; function: randomMap(int (*)[6])
+                                                           ; frame size=72
+    00000690 2FE6                   MOV.L       R14,@-R15
+    00000692 EE03                   MOV         #3,R14
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   20
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000694 2FD6                   MOV.L       R13,@-R15
+    00000696 6D43                   MOV         R4,R13
+    00000698 2FC6                   MOV.L       R12,@-R15
+    0000069A 2FB6                   MOV.L       R11,@-R15
+    0000069C 2FA6                   MOV.L       R10,@-R15
+    0000069E EB00                   MOV         #0,R11
+    000006A0 2F96                   MOV.L       R9,@-R15
+    000006A2 EA05                   MOV         #5,R10
+    000006A4 2F86                   MOV.L       R8,@-R15
+    000006A6 E906                   MOV         #6,R9
+    000006A8 4F22                   STS.L       PR,@-R15
+    000006AA 7FD8                   ADD         #-40,R15
+         Hex.cpp   198            for (size_t i = 0; i < 5; ++i){
+    000006AC A027                   BRA         L684
+    000006AE 68B3                   MOV         R11,R8
+    000006B0              L685:                             
+         Hex.cpp   199                    for (size_t j = 0; j < 6; ++j){
+    000006B0 6CB3                   MOV         R11,R12
+    000006B2 E201                   MOV         #1,R2
+    000006B4 2289                   AND         R8,R2
+    000006B6 6383                   MOV         R8,R3
+    000006B8 1F21                   MOV.L       R2,@(4,R15)
+    000006BA 6183                   MOV         R8,R1
+    000006BC 4300                   SHLL        R3
+    000006BE 331C                   ADD         R1,R3
+    000006C0 4308                   SHLL2       R3
+    000006C2 4300                   SHLL        R3
+    000006C4 A018                   BRA         L686
+    000006C6 2F32                   MOV.L       R3,@R15
+    000006C8              L687:                             
+         Hex.cpp   200                            unsigned int num = randomInt(0, 2);
+    000006C8 E502                   MOV         #2,R5
+    000006CA BE25                   BSR         _randomInt__FUiT1
+    000006CC E400                   MOV         #0,R4
+    000006CE 6403                   MOV         R0,R4
+         Hex.cpp   201    
+         Hex.cpp   202                            if (i%2 != 0 && j == 5)
+    000006D0 52F1                   MOV.L       @(4,R15),R2
+    000006D2 2228                   TST         R2,R2
+    000006D4 8903                   BT          L688
+    000006D6 60C3                   MOV         R12,R0
+    000006D8 8805                   CMP/EQ      #5,R0
+    000006DA 8B00                   BF          L688
+         Hex.cpp   203                                    num = 0;
+    000006DC 64B3                   MOV         R11,R4
+    000006DE              L688:                             
+         Hex.cpp   204    
+         Hex.cpp   205                            map[i][j] = (num != 0) * 3;
+    000006DE 60C3                   MOV         R12,R0
+    000006E0 63F2                   MOV.L       @R15,R3
+    000006E2 2448                   TST         R4,R4
+    000006E4 4008                   SHLL2       R0
+    000006E6 303C                   ADD         R3,R0
+    000006E8 0229                   MOVT        R2
+    000006EA 72FF                   ADD         #-1,R2
+    000006EC 622B                   NEG         R2,R2
+    000006EE 6123                   MOV         R2,R1
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   21
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000006F0 4200                   SHLL        R2
+    000006F2 321C                   ADD         R1,R2
+    000006F4 0D26                   MOV.L       R2,@(R0,R13)
+    000006F6 7C01                   ADD         #1,R12
+    000006F8              L686:                             
+    000006F8 3C92                   CMP/HS      R9,R12
+    000006FA 8BE5                   BF          L687
+    000006FC 7801                   ADD         #1,R8
+    000006FE              L684:                             
+    000006FE 38A2                   CMP/HS      R10,R8
+    00000700 8BD6                   BF          L685
+         Hex.cpp   206                    }
+         Hex.cpp   207            }
+         Hex.cpp   208    
+         Hex.cpp   209            map[0][0] = 1;
+    00000702 E301                   MOV         #1,R3
+    00000704 2D32                   MOV.L       R3,@R13
+         Hex.cpp   210            map[0][1] = 3;
+         Hex.cpp   211            map[4][4] = 3;
+    00000706 62D3                   MOV         R13,R2
+    00000708 1DE1                   MOV.L       R14,@(4,R13)
+         Hex.cpp   212        map[4][5] = 2;
+    0000070A 63D3                   MOV         R13,R3
+    0000070C 7260                   ADD         #96,R2
+    0000070E 7360                   ADD         #96,R3
+    00000710 12E4                   MOV.L       R14,@(16,R2)
+    00000712 E202                   MOV         #2,R2
+    00000714 1325                   MOV.L       R2,@(20,R3)
+         Hex.cpp   213    
+         Hex.cpp   214            int array[6];
+         Hex.cpp   215    
+         Hex.cpp   216            for (int i = 0; i < 5; ++i){
+    00000716 A126                   BRA         L690
+    00000718 6CB3                   MOV         R11,R12
+    0000071A              L691:                             
+         Hex.cpp   217                    for (int j = 0; j < 6; ++j){
+    0000071A A11F                   BRA         L692
+    0000071C 68B3                   MOV         R11,R8
+    0000071E              L693:                             
+         Hex.cpp   218                            if (!(i == 0 && j == 0) && !(i == 4 && j == 5) && map[i][j] != 0){
+    0000071E 2CC8                   TST         R12,R12
+    00000720 8B03                   BF          L695
+    00000722 2888                   TST         R8,R8
+    00000724 8B01                   BF          L799
+    00000726 A118                   BRA         L694
+    00000728 0009                   NOP
+    0000072A              L799:                             
+    0000072A              L695:                             
+    0000072A 60C3                   MOV         R12,R0
+    0000072C 8804                   CMP/EQ      #4,R0
+    0000072E 8B04                   BF          L696
+    00000730 6083                   MOV         R8,R0
+    00000732 8805                   CMP/EQ      #5,R0
+    00000734 8B01                   BF          L800
+    00000736 A110                   BRA         L694
+    00000738 0009                   NOP
+    0000073A              L800:                             
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   22
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    0000073A              L696:                             
+    0000073A 60C3                   MOV         R12,R0
+    0000073C 63C3                   MOV         R12,R3
+    0000073E 4000                   SHLL        R0
+    00000740 303C                   ADD         R3,R0
+    00000742 4008                   SHLL2       R0
+    00000744 4000                   SHLL        R0
+    00000746 6283                   MOV         R8,R2
+    00000748 4208                   SHLL2       R2
+    0000074A 302C                   ADD         R2,R0
+    0000074C 03DE                   MOV.L       @(R0,R13),R3
+    0000074E 2338                   TST         R3,R3
+    00000750 8B01                   BF          L801
+    00000752 A102                   BRA         L694
+    00000754 0009                   NOP
+    00000756              L801:                             
+         Hex.cpp   219                                    for (unsigned int k = 0; k < 6; ++k)
+    00000756 A007                   BRA         L697
+    00000758 64B3                   MOV         R11,R4
+    0000075A              L698:                             
+         Hex.cpp   220                                            array[k] = 0;
+    0000075A 6043                   MOV         R4,R0
+    0000075C 4008                   SHLL2       R0
+    0000075E 63F3                   MOV         R15,R3
+    00000760 7310                   ADD         #16,R3
+    00000762 303C                   ADD         R3,R0
+    00000764 20B2                   MOV.L       R11,@R0
+    00000766 7401                   ADD         #1,R4
+    00000768              L697:                             
+    00000768 3492                   CMP/HS      R9,R4
+    0000076A 8BF6                   BF          L698
+         Hex.cpp   221                                    neighbourArray(i, j, map, array);
+    0000076C 67F3                   MOV         R15,R7
+    0000076E 7710                   ADD         #16,R7
+    00000770 66D3                   MOV         R13,R6
+    00000772 6583                   MOV         R8,R5
+    00000774 BEA6                   BSR         _neighbourArray__FiT1PA6_iPi
+    00000776 64C3                   MOV         R12,R4
+         Hex.cpp   222    
+         Hex.cpp   223                                    unsigned int count = 0;
+    00000778 1FB1                   MOV.L       R11,@(4,R15)
+         Hex.cpp   224    
+         Hex.cpp   225                                    for (unsigned int k = 0; k < 6; ++k){
+    0000077A A00C                   BRA         L699
+    0000077C 64B3                   MOV         R11,R4
+    0000077E              L700:                             
+         Hex.cpp   226                                            if (array[k] != 0)
+    0000077E 6043                   MOV         R4,R0
+    00000780 4008                   SHLL2       R0
+    00000782 63F3                   MOV         R15,R3
+    00000784 7310                   ADD         #16,R3
+    00000786 303C                   ADD         R3,R0
+    00000788 6202                   MOV.L       @R0,R2
+    0000078A 2228                   TST         R2,R2
+    0000078C 8D03                   BT/S        L701
+    0000078E 7401                   ADD         #1,R4
+         Hex.cpp   227                                                    count++;
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   23
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000790 52F1                   MOV.L       @(4,R15),R2
+    00000792 7201                   ADD         #1,R2
+    00000794 1F21                   MOV.L       R2,@(4,R15)
+    00000796              L701:                             
+    00000796              L699:                             
+    00000796 3492                   CMP/HS      R9,R4
+    00000798 8BF1                   BF          L700
+         Hex.cpp   228                                    }
+         Hex.cpp   229    
+         Hex.cpp   230                                    if (count < 2){
+    0000079A E202                   MOV         #2,R2
+    0000079C 53F1                   MOV.L       @(4,R15),R3
+    0000079E 3322                   CMP/HS      R2,R3
+    000007A0 8B01                   BF          L802
+    000007A2 A0DA                   BRA         L694
+    000007A4 0009                   NOP
+    000007A6              L802:                             
+         Hex.cpp   231                                            for (unsigned int k = 0; k < 6; ++k){
+    000007A6 A0D3                   BRA         L703
+    000007A8 2FB2                   MOV.L       R11,@R15
+    000007AA              L704:                             
+         Hex.cpp   232                                                    if (array[k] == 0){
+    000007AA 63F3                   MOV         R15,R3
+    000007AC 60F2                   MOV.L       @R15,R0
+    000007AE 7310                   ADD         #16,R3
+    000007B0 4008                   SHLL2       R0
+    000007B2 303C                   ADD         R3,R0
+    000007B4 6202                   MOV.L       @R0,R2
+    000007B6 2228                   TST         R2,R2
+    000007B8 8901                   BT          L803
+    000007BA A0C3                   BRA         L705
+    000007BC 0009                   NOP
+    000007BE              L803:                             
+    000007BE 66C3                   MOV         R12,R6
+    000007C0 76FF                   ADD         #-1,R6
+    000007C2 6083                   MOV         R8,R0
+    000007C4 7001                   ADD         #1,R0
+    000007C6 6783                   MOV         R8,R7
+    000007C8 1F02                   MOV.L       R0,@(8,R15)
+    000007CA 65C3                   MOV         R12,R5
+    000007CC 4708                   SHLL2       R7
+    000007CE 63C3                   MOV         R12,R3
+    000007D0 4500                   SHLL        R5
+    000007D2 353C                   ADD         R3,R5
+    000007D4 4508                   SHLL2       R5
+    000007D6 4500                   SHLL        R5
+    000007D8 60C3                   MOV         R12,R0
+    000007DA 7001                   ADD         #1,R0
+    000007DC 1F03                   MOV.L       R0,@(12,R15)
+    000007DE 6483                   MOV         R8,R4
+    000007E0 60F2                   MOV.L       @R15,R0
+    000007E2 8800                   CMP/EQ      #0,R0
+    000007E4 8D10                   BT/S        L543
+    000007E6 74FF                   ADD         #-1,R4
+    000007E8 8801                   CMP/EQ      #1,R0
+    000007EA 892D                   BT          L544
+    000007EC 8802                   CMP/EQ      #2,R0
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   24
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000007EE 8941                   BT          L545
+    000007F0 8803                   CMP/EQ      #3,R0
+    000007F2 895B                   BT          L546
+    000007F4 8804                   CMP/EQ      #4,R0
+    000007F6 8B01                   BF          L804
+    000007F8 A078                   BRA         L547
+    000007FA 0009                   NOP
+    000007FC              L804:                             
+    000007FC 8805                   CMP/EQ      #5,R0
+    000007FE 8B01                   BF          L805
+    00000800 A07B                   BRA         L548
+    00000802 0009                   NOP
+    00000804              L805:                             
+    00000804 A09E                   BRA         L705
+    00000806 0009                   NOP
+    00000808              L543:                            ; case label 
+         Hex.cpp   233                                                            switch (k) {
+         Hex.cpp   234                                                                    case UP_R:
+         Hex.cpp   235                                                                            if (i - 1 >= 0){
+    00000808 4611                   CMP/PZ      R6
+    0000080A 8901                   BT          L806
+    0000080C A09A                   BRA         L705
+    0000080E 0009                   NOP
+    00000810              L806:                             
+         Hex.cpp   236                                                                                    if (i%2 == 0){
+    00000810 60C3                   MOV         R12,R0
+    00000812 4011                   CMP/PZ      R0
+    00000814 8B01                   BF          L709
+    00000816 A005                   BRA         L710
+    00000818 C901                   AND         #1,R0
+    0000081A              L709:                             
+    0000081A 6007                   NOT         R0,R0
+    0000081C 7001                   ADD         #1,R0
+    0000081E C901                   AND         #1,R0
+    00000820 6007                   NOT         R0,R0
+    00000822 7001                   ADD         #1,R0
+    00000824              L710:                             
+    00000824 2008                   TST         R0,R0
+    00000826 8B01                   BF          L807
+    00000828 A081                   BRA         L529
+    0000082A 0009                   NOP
+    0000082C              L807:                             
+         Hex.cpp   237                                                                                            map[i-1][j] = 3;
+         Hex.cpp   238                                                                                            ++count;
+         Hex.cpp   239                                                                                    } else {
+         Hex.cpp   240                                                                                            if (j + 1 < 5){
+    0000082C 51F2                   MOV.L       @(8,R15),R1
+    0000082E 31A3                   CMP/GE      R10,R1
+    00000830 8B01                   BF          L808
+    00000832 A087                   BRA         L705
+    00000834 0009                   NOP
+    00000836              L808:                             
+         Hex.cpp   241                                                                                                    map[i-1][j
+                         ++1] = 3;
+    00000836 6363                   MOV         R6,R3
+    00000838 4600                   SHLL        R6
+    0000083A 363C                   ADD         R3,R6
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   25
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    0000083C 4608                   SHLL2       R6
+    0000083E 4600                   SHLL        R6
+    00000840 367C                   ADD         R7,R6
+    00000842 36DC                   ADD         R13,R6
+    00000844 A07B                   BRA         L537
+    00000846 16E1                   MOV.L       R14,@(4,R6)
+    00000848              L544:                            ; case label 
+         Hex.cpp   242                                                                                                    ++count;
+         Hex.cpp   243                                                                                            }
+         Hex.cpp   244                                                                                    }
+         Hex.cpp   245                                                                            }
+         Hex.cpp   246                                                                    break;
+         Hex.cpp   247    
+         Hex.cpp   248                                                                    case R:
+         Hex.cpp   249                                                                            if (j + 1 < 6 - (i%2 != 0)){
+    00000848 60C3                   MOV         R12,R0
+    0000084A 4011                   CMP/PZ      R0
+    0000084C 8B01                   BF          L715
+    0000084E A005                   BRA         L716
+    00000850 C901                   AND         #1,R0
+    00000852              L715:                             
+    00000852 6007                   NOT         R0,R0
+    00000854 7001                   ADD         #1,R0
+    00000856 C901                   AND         #1,R0
+    00000858 6007                   NOT         R0,R0
+    0000085A 7001                   ADD         #1,R0
+    0000085C              L716:                             
+    0000085C 52F2                   MOV.L       @(8,R15),R2
+    0000085E 2008                   TST         R0,R0
+    00000860 0029                   MOVT        R0
+    00000862 CA01                   XOR         #1,R0
+    00000864 6393                   MOV         R9,R3
+    00000866 3308                   SUB         R0,R3
+    00000868 3233                   CMP/GE      R3,R2
+    0000086A 896B                   BT          L705
+         Hex.cpp   250                                                                                    map[i][j+1] = 3;
+    0000086C 357C                   ADD         R7,R5
+    0000086E 35DC                   ADD         R13,R5
+    00000870 A065                   BRA         L537
+    00000872 15E1                   MOV.L       R14,@(4,R5)
+    00000874              L545:                            ; case label 
+         Hex.cpp   251                                                                                    ++count;
+         Hex.cpp   252                                                                            }
+         Hex.cpp   253                                                                    break;
+         Hex.cpp   254    
+         Hex.cpp   255                                                                    case BOTTOM_R:
+         Hex.cpp   256                                                                            if (i + 1 < 5){
+    00000874 52F3                   MOV.L       @(12,R15),R2
+    00000876 32A3                   CMP/GE      R10,R2
+    00000878 8964                   BT          L705
+         Hex.cpp   257                                                                                    if (i%2 == 0){
+    0000087A 60C3                   MOV         R12,R0
+    0000087C 4011                   CMP/PZ      R0
+    0000087E 8B01                   BF          L719
+    00000880 A005                   BRA         L720
+    00000882 C901                   AND         #1,R0
+    00000884              L719:                             
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   26
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000884 6007                   NOT         R0,R0
+    00000886 7001                   ADD         #1,R0
+    00000888 C901                   AND         #1,R0
+    0000088A 6007                   NOT         R0,R0
+    0000088C 7001                   ADD         #1,R0
+    0000088E              L720:                             
+    0000088E 2008                   TST         R0,R0
+    00000890 8B03                   BF          L718
+         Hex.cpp   258                                                                                            if (j < 5){
+    00000892 38A3                   CMP/GE      R10,R8
+    00000894 8956                   BT          L705
+    00000896 A022                   BRA         L508
+    00000898 0009                   NOP
+    0000089A              L718:                             
+         Hex.cpp   259                                                                                                    map[i+1][j
+                         +] = 3;
+         Hex.cpp   260                                                                                                    ++count;
+         Hex.cpp   261                                                                                            }
+         Hex.cpp   262                                                                                    } else {
+         Hex.cpp   263                                                                                            if (j + 1 < 5){
+    0000089A 52F2                   MOV.L       @(8,R15),R2
+    0000089C 32A3                   CMP/GE      R10,R2
+    0000089E 8951                   BT          L705
+         Hex.cpp   264                                                                                                    map[i+1][j
+                         ++1] = 3;
+    000008A0 35DC                   ADD         R13,R5
+    000008A2 6253                   MOV         R5,R2
+    000008A4 7218                   ADD         #24,R2
+    000008A6 372C                   ADD         R2,R7
+    000008A8 A049                   BRA         L537
+    000008AA 17E1                   MOV.L       R14,@(4,R7)
+    000008AC              L546:                            ; case label 
+         Hex.cpp   265                                                                                                    ++count;
+         Hex.cpp   266                                                                                            }
+         Hex.cpp   267                                                                                    }
+         Hex.cpp   268                                                                            }
+         Hex.cpp   269                                                                    break;
+         Hex.cpp   270    
+         Hex.cpp   271                                                                    case BOTTOM_L:
+         Hex.cpp   272                                                                            if (i + 1 < 5){
+    000008AC 53F3                   MOV.L       @(12,R15),R3
+    000008AE 33A3                   CMP/GE      R10,R3
+    000008B0 8948                   BT          L705
+         Hex.cpp   273                                                                                    if (i%2 == 0){
+    000008B2 60C3                   MOV         R12,R0
+    000008B4 4011                   CMP/PZ      R0
+    000008B6 8B01                   BF          L726
+    000008B8 A005                   BRA         L727
+    000008BA C901                   AND         #1,R0
+    000008BC              L726:                             
+    000008BC 6007                   NOT         R0,R0
+    000008BE 7001                   ADD         #1,R0
+    000008C0 C901                   AND         #1,R0
+    000008C2 6007                   NOT         R0,R0
+    000008C4 7001                   ADD         #1,R0
+    000008C6              L727:                             
+    000008C6 2008                   TST         R0,R0
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   27
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000008C8 8B09                   BF          L508
+         Hex.cpp   274                                                                                            if (j - 1 >= 0){
+    000008CA 4411                   CMP/PZ      R4
+    000008CC 8B3A                   BF          L705
+         Hex.cpp   275                                                                                                    map[i+1][j
+                         +-1] = 3;
+    000008CE 6053                   MOV         R5,R0
+    000008D0 30DC                   ADD         R13,R0
+    000008D2 4408                   SHLL2       R4
+    000008D4 6303                   MOV         R0,R3
+    000008D6 7318                   ADD         #24,R3
+    000008D8 343C                   ADD         R3,R4
+    000008DA A030                   BRA         L537
+    000008DC 24E2                   MOV.L       R14,@R4
+    000008DE              L508:
+         Hex.cpp   276                                                                                                    ++count;
+         Hex.cpp   277                                                                                            }
+         Hex.cpp   278                                                                                    } else {
+         Hex.cpp   279                                                                                            map[i+1][j] = 3;
+    000008DE 6053                   MOV         R5,R0
+    000008E0 30DC                   ADD         R13,R0
+    000008E2 6303                   MOV         R0,R3
+    000008E4 7318                   ADD         #24,R3
+    000008E6 373C                   ADD         R3,R7
+    000008E8 A029                   BRA         L537
+    000008EA 27E2                   MOV.L       R14,@R7
+    000008EC              L547:                            ; case label 
+         Hex.cpp   280                                                                                            ++count;
+         Hex.cpp   281                                                                                    }
+         Hex.cpp   282                                                                            }
+         Hex.cpp   283                                                                    break;
+         Hex.cpp   284    
+         Hex.cpp   285                                                                    case L:
+         Hex.cpp   286                                                                            if (j - 1 >= 0){
+    000008EC 4411                   CMP/PZ      R4
+    000008EE 8B29                   BF          L705
+         Hex.cpp   287                                                                                    map[i][j-1] = 3;
+    000008F0 6043                   MOV         R4,R0
+    000008F2 4008                   SHLL2       R0
+    000008F4 305C                   ADD         R5,R0
+    000008F6 A022                   BRA         L537
+    000008F8 0DE6                   MOV.L       R14,@(R0,R13)
+    000008FA              L548:                            ; case label 
+         Hex.cpp   288                                                                                    ++count;
+         Hex.cpp   289                                                                            }
+         Hex.cpp   290                                                                    break;
+         Hex.cpp   291    
+         Hex.cpp   292                                                                    case UP_L:
+         Hex.cpp   293                                                                            if (i - 1 >= 0){
+    000008FA 4611                   CMP/PZ      R6
+    000008FC 8B22                   BF          L705
+         Hex.cpp   294                                                                                    if (i%2 == 0){
+    000008FE 60C3                   MOV         R12,R0
+    00000900 4011                   CMP/PZ      R0
+    00000902 8B01                   BF          L733
+    00000904 A005                   BRA         L734
+    00000906 C901                   AND         #1,R0
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   28
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000908              L733:                             
+    00000908 6007                   NOT         R0,R0
+    0000090A 7001                   ADD         #1,R0
+    0000090C C901                   AND         #1,R0
+    0000090E 6007                   NOT         R0,R0
+    00000910 7001                   ADD         #1,R0
+    00000912              L734:                             
+    00000912 2008                   TST         R0,R0
+    00000914 8B0B                   BF          L529
+         Hex.cpp   295                                                                                            if (j - 1 >= 0){
+    00000916 4411                   CMP/PZ      R4
+    00000918 8B14                   BF          L705
+         Hex.cpp   296                                                                                                    map[i-1][j
+                         +-1] = 3;
+    0000091A 6063                   MOV         R6,R0
+    0000091C 6363                   MOV         R6,R3
+    0000091E 4000                   SHLL        R0
+    00000920 303C                   ADD         R3,R0
+    00000922 4008                   SHLL2       R0
+    00000924 4000                   SHLL        R0
+    00000926 4408                   SHLL2       R4
+    00000928 304C                   ADD         R4,R0
+    0000092A A008                   BRA         L537
+    0000092C 0DE6                   MOV.L       R14,@(R0,R13)
+    0000092E              L529:
+         Hex.cpp   297                                                                                                    ++count;
+         Hex.cpp   298                                                                                            }
+         Hex.cpp   299                                                                                    } else {
+         Hex.cpp   300                                                                                            map[i-1][j] = 3;
+    0000092E 6063                   MOV         R6,R0
+    00000930 6363                   MOV         R6,R3
+    00000932 4000                   SHLL        R0
+    00000934 303C                   ADD         R3,R0
+    00000936 4008                   SHLL2       R0
+    00000938 4000                   SHLL        R0
+    0000093A 307C                   ADD         R7,R0
+    0000093C 0DE6                   MOV.L       R14,@(R0,R13)
+    0000093E              L537:
+         Hex.cpp   301                                                                                            ++count;
+    0000093E 52F1                   MOV.L       @(4,R15),R2
+    00000940 7201                   ADD         #1,R2
+    00000942 1F21                   MOV.L       R2,@(4,R15)
+         Hex.cpp   302                                                                                    }
+         Hex.cpp   303                                                                            }
+         Hex.cpp   304                                                                    break;
+         Hex.cpp   305    
+         Hex.cpp   306                                                                    default:
+         Hex.cpp   307                                                                    break;
+    00000944              L705:                             
+         Hex.cpp   308                                                            }
+         Hex.cpp   309                                                    }
+         Hex.cpp   310    
+         Hex.cpp   311                                                    if (count == 2)
+    00000944 50F1                   MOV.L       @(4,R15),R0
+    00000946 8802                   CMP/EQ      #2,R0
+    00000948 8907                   BT          L694
+    0000094A 63F2                   MOV.L       @R15,R3
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   29
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    0000094C 7301                   ADD         #1,R3
+    0000094E 2F32                   MOV.L       R3,@R15
+    00000950              L703:                             
+    00000950 62F2                   MOV.L       @R15,R2
+    00000952 3292                   CMP/HS      R9,R2
+    00000954 8901                   BT          L809
+    00000956 AF28                   BRA         L704
+    00000958 0009                   NOP
+    0000095A              L809:                             
+    0000095A              L694:                             
+    0000095A 7801                   ADD         #1,R8
+    0000095C              L692:                             
+    0000095C 3893                   CMP/GE      R9,R8
+    0000095E 8901                   BT          L810
+    00000960 AEDD                   BRA         L693
+    00000962 0009                   NOP
+    00000964              L810:                             
+    00000964 7C01                   ADD         #1,R12
+    00000966              L690:                             
+    00000966 3CA3                   CMP/GE      R10,R12
+    00000968 8901                   BT          L811
+    0000096A AED6                   BRA         L691
+    0000096C 0009                   NOP
+    0000096E              L811:                             
+         Hex.cpp   312                                                            break;
+         Hex.cpp   313                                            }
+         Hex.cpp   314                                    }
+         Hex.cpp   315                            }
+         Hex.cpp   316                    }
+         Hex.cpp   317            }
+         Hex.cpp   318    }
+    0000096E 7F28                   ADD         #40,R15
+    00000970 4F26                   LDS.L       @R15+,PR
+    00000972 68F6                   MOV.L       @R15+,R8
+    00000974 69F6                   MOV.L       @R15+,R9
+    00000976 6AF6                   MOV.L       @R15+,R10
+    00000978 6BF6                   MOV.L       @R15+,R11
+    0000097A 6CF6                   MOV.L       @R15+,R12
+    0000097C 6DF6                   MOV.L       @R15+,R13
+    0000097E 000B                   RTS
+    00000980 6EF6                   MOV.L       @R15+,R14
+         Hex.cpp   319    
+         Hex.cpp   320    int main(){
+    00000982              _main:                           ; function: main
+                                                           ; frame size=444
+                                                           ; used runtime library name:
+                                                           ; __quick_mvn
+    00000982 2FE6                   MOV.L       R14,@-R15
+    00000984 2FD6                   MOV.L       R13,@-R15
+    00000986 2FC6                   MOV.L       R12,@-R15
+    00000988 2FB6                   MOV.L       R11,@-R15
+    0000098A EB01                   MOV         #1,R11
+    0000098C DE21                   MOV.L       L812+14,R14; _manager
+    0000098E 2FA6                   MOV.L       R10,@-R15
+    00000990 2F96                   MOV.L       R9,@-R15
+    00000992 2F86                   MOV.L       R8,@-R15
+    00000994 4F22                   STS.L       PR,@-R15
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   30
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000996 9036                   MOV.W       L812,R0    ; H'FE64
+    00000998 D81B                   MOV.L       L812+2,R8  ; _rPointsPlayer2
+    0000099A 3F0C                   ADD         R0,R15
+    0000099C D91B                   MOV.L       L812+6,R9  ; _rPointsPlayer1
+    0000099E DA1C                   MOV.L       L812+10,R10; _turn
+         Hex.cpp   321        srand(RTC_getTicks());
+    000009A0 D31D                   MOV.L       L812+18,R3 ; _RTC_getTicks
+    000009A2 430B                   JSR         @R3
+    000009A4 EC00                   MOV         #0,R12
+    000009A6 D21D                   MOV.L       L812+22,R2 ; _srand
+    000009A8 420B                   JSR         @R2
+    000009AA 6403                   MOV         R0,R4
+         Hex.cpp   322    
+         Hex.cpp   323        int map[5][6];
+         Hex.cpp   324    
+         Hex.cpp   325        bool selectionMade = false;
+    000009AC 1FC1                   MOV.L       R12,@(4,R15)
+         Hex.cpp   326    
+         Hex.cpp   327        while (!IsKeyDown(KEY_CTRL_EXE)){
+    000009AE A083                   BRA         L739
+    000009B0 ED03                   MOV         #3,R13
+    000009B2              L740:                             
+         Hex.cpp   328            ML_clear_vram();
+    000009B2 D21B                   MOV.L       L812+26,R2 ; _ML_clear_vram
+    000009B4 420B                   JSR         @R2
+    000009B6 0009                   NOP
+         Hex.cpp   329                    if (!selectionMade){
+    000009B8 53F1                   MOV.L       @(4,R15),R3
+    000009BA 2338                   TST         R3,R3
+    000009BC 8B0A                   BF          L741
+         Hex.cpp   330                            PrintMini(0, 0, "[0] = Random map", MINI_OR);
+    000009BE E711                   MOV         #17,R7
+    000009C0 D618                   MOV.L       L812+30,R6 ; L439
+    000009C2 E500                   MOV         #0,R5
+    000009C4 D318                   MOV.L       L812+34,R3 ; _PrintMini
+    000009C6 430B                   JSR         @R3
+    000009C8 6453                   MOV         R5,R4
+         Hex.cpp   331                            PrintMini(0, 10, "[1] = Pre-generated map", MINI_OR);
+    000009CA E711                   MOV         #17,R7
+    000009CC D617                   MOV.L       L812+38,R6 ; L440
+    000009CE E50A                   MOV         #10,R5
+    000009D0 A004                   BRA         L791
+    000009D2 E400                   MOV         #0,R4
+    000009D4              L741:                             
+         Hex.cpp   332                    } else {
+         Hex.cpp   333                            PrintMini(0, 0, "Press [EXE] to start", MINI_OR);
+    000009D4 D616                   MOV.L       L812+42,R6 ; L442
+    000009D6 E500                   MOV         #0,R5
+    000009D8 E711                   MOV         #17,R7
+    000009DA 6453                   MOV         R5,R4
+    000009DC              L791:                             
+    000009DC D212                   MOV.L       L812+34,R2 ; _PrintMini
+    000009DE 420B                   JSR         @R2
+    000009E0 0009                   NOP
+         Hex.cpp   334                    }
+         Hex.cpp   335            ML_display_vram();
+    000009E2 D314                   MOV.L       L812+46,R3 ; _ML_display_vram
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   31
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    000009E4 430B                   JSR         @R3
+    000009E6 0009                   NOP
+         Hex.cpp   336    
+         Hex.cpp   337            unsigned int key = 0;
+    000009E8 2FC2                   MOV.L       R12,@R15
+         Hex.cpp   338    
+         Hex.cpp   339            GetKey(&key);
+    000009EA D313                   MOV.L       L812+50,R3 ; _GetKey
+    000009EC 430B                   JSR         @R3
+    000009EE 64F3                   MOV         R15,R4
+         Hex.cpp   340    
+         Hex.cpp   341            if (!selectionMade){
+    000009F0 52F1                   MOV.L       @(4,R15),R2
+    000009F2 2228                   TST         R2,R2
+    000009F4 8B60                   BF          L739
+         Hex.cpp   342                            if (key == KEY_CHAR_0){
+    000009F6 60F2                   MOV.L       @R15,R0
+    000009F8 8830                   CMP/EQ      #48,R0
+    000009FA 8B1F                   BF          L744
+         Hex.cpp   343                            randomMap(map);
+    000009FC 64F3                   MOV         R15,R4
+    000009FE BE47                   BSR         _randomMap__FPA6_i
+    00000A00 740C                   ADD         #12,R4
+    00000A02 A058                   BRA         L745
+    00000A04 0009                   NOP
+    00000A06              L812:                             
+    00000A06 FE64                   .DATA.W     H'FE64
+    00000A08 <00000000>             .DATA.L     _rPointsPlayer2
+    00000A0C <00000000>             .DATA.L     _rPointsPlayer1
+    00000A10 <00000000>             .DATA.L     _turn
+    00000A14 <00000000>             .DATA.L     _manager
+    00000A18 <00000000>             .DATA.L     _RTC_getTicks
+    00000A1C <00000000>             .DATA.L     _srand
+    00000A20 <00000000>             .DATA.L     _ML_clear_vram
+    00000A24 <00000000>             .DATA.L     L439
+    00000A28 <00000000>             .DATA.L     _PrintMini
+    00000A2C <00000000>             .DATA.L     L440
+    00000A30 <00000000>             .DATA.L     L442
+    00000A34 <00000000>             .DATA.L     _ML_display_vram
+    00000A38 <00000000>             .DATA.L     _GetKey
+    00000A3C              L744:                             
+         Hex.cpp   344                    } else if (key == KEY_CHAR_1){
+    00000A3C 60F2                   MOV.L       @R15,R0
+    00000A3E 8831                   CMP/EQ      #49,R0
+    00000A40 8B39                   BF          L745
+         Hex.cpp   345                            map[0][0] = 3;
+    00000A42 64F3                   MOV         R15,R4
+    00000A44 740C                   ADD         #12,R4
+         Hex.cpp   346                                map[0][1] = 3;
+         Hex.cpp   347                                map[0][2] = 3;
+         Hex.cpp   348                                map[0][3] = 3;
+         Hex.cpp   349                                map[0][4] = 1;
+         Hex.cpp   350                                map[0][5] = 3;
+         Hex.cpp   351                                //
+         Hex.cpp   352                                map[1][0] = 0;
+         Hex.cpp   353                                map[1][1] = 3;
+         Hex.cpp   354                                map[1][2] = 3;
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   32
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+         Hex.cpp   355                                map[1][3] = 3;
+         Hex.cpp   356                                map[1][4] = 0;
+         Hex.cpp   357                                map[1][5] = 0;
+         Hex.cpp   358                                //
+         Hex.cpp   359                                map[2][0] = 0;
+         Hex.cpp   360                                map[2][1] = 3;
+         Hex.cpp   361                                map[2][2] = 3;
+         Hex.cpp   362                                map[2][3] = 3;
+         Hex.cpp   363                                map[2][4] = 3;
+    00000A46 E040                   MOV         #64,R0
+    00000A48 24D2                   MOV.L       R13,@R4
+         Hex.cpp   364                                map[2][5] = 0;
+         Hex.cpp   365                                //
+         Hex.cpp   366                                map[3][0] = 0;
+    00000A4A 6343                   MOV         R4,R3
+    00000A4C 14D1                   MOV.L       R13,@(4,R4)
+         Hex.cpp   367                                map[3][1] = 3;
+    00000A4E 6243                   MOV         R4,R2
+    00000A50 14D2                   MOV.L       R13,@(8,R4)
+    00000A52 7348                   ADD         #72,R3
+    00000A54 14D3                   MOV.L       R13,@(12,R4)
+    00000A56 7248                   ADD         #72,R2
+    00000A58 14B4                   MOV.L       R11,@(16,R4)
+    00000A5A 14D5                   MOV.L       R13,@(20,R4)
+    00000A5C 14C6                   MOV.L       R12,@(24,R4)
+    00000A5E 14D7                   MOV.L       R13,@(28,R4)
+    00000A60 14D8                   MOV.L       R13,@(32,R4)
+    00000A62 14D9                   MOV.L       R13,@(36,R4)
+    00000A64 14CA                   MOV.L       R12,@(40,R4)
+    00000A66 14CB                   MOV.L       R12,@(44,R4)
+    00000A68 14CC                   MOV.L       R12,@(48,R4)
+    00000A6A 14DD                   MOV.L       R13,@(52,R4)
+    00000A6C 14DE                   MOV.L       R13,@(56,R4)
+    00000A6E 14DF                   MOV.L       R13,@(60,R4)
+    00000A70 04D6                   MOV.L       R13,@(R0,R4)
+    00000A72 E044                   MOV         #68,R0
+    00000A74 04C6                   MOV.L       R12,@(R0,R4)
+    00000A76 23C2                   MOV.L       R12,@R3
+    00000A78 12D1                   MOV.L       R13,@(4,R2)
+         Hex.cpp   368                                map[3][2] = 3;
+    00000A7A 6343                   MOV         R4,R3
+    00000A7C 7348                   ADD         #72,R3
+         Hex.cpp   369                                map[3][3] = 3;
+    00000A7E 6243                   MOV         R4,R2
+    00000A80 13D2                   MOV.L       R13,@(8,R3)
+    00000A82 7248                   ADD         #72,R2
+    00000A84 12D3                   MOV.L       R13,@(12,R2)
+         Hex.cpp   370                                map[3][4] = 0;
+    00000A86 6343                   MOV         R4,R3
+    00000A88 7348                   ADD         #72,R3
+         Hex.cpp   371                                map[3][5] = 0;
+    00000A8A 6243                   MOV         R4,R2
+    00000A8C 13C4                   MOV.L       R12,@(16,R3)
+    00000A8E 7248                   ADD         #72,R2
+    00000A90 12C5                   MOV.L       R12,@(20,R2)
+         Hex.cpp   372                                //
+         Hex.cpp   373                                map[4][0] = 3;
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   33
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000A92 6343                   MOV         R4,R3
+    00000A94 7360                   ADD         #96,R3
+         Hex.cpp   374                                map[4][1] = 2;
+    00000A96 6243                   MOV         R4,R2
+    00000A98 23D2                   MOV.L       R13,@R3
+    00000A9A 7260                   ADD         #96,R2
+    00000A9C E302                   MOV         #2,R3
+    00000A9E 1231                   MOV.L       R3,@(4,R2)
+         Hex.cpp   375                                map[4][2] = 3;
+    00000AA0 6243                   MOV         R4,R2
+    00000AA2 7260                   ADD         #96,R2
+    00000AA4 12D2                   MOV.L       R13,@(8,R2)
+         Hex.cpp   376                                map[4][3] = 3;
+    00000AA6 6343                   MOV         R4,R3
+    00000AA8 7360                   ADD         #96,R3
+         Hex.cpp   377                                map[4][4] = 3;
+    00000AAA 6243                   MOV         R4,R2
+    00000AAC 13D3                   MOV.L       R13,@(12,R3)
+    00000AAE 7260                   ADD         #96,R2
+    00000AB0 12D4                   MOV.L       R13,@(16,R2)
+         Hex.cpp   378                                map[4][5] = 3;
+    00000AB2 7460                   ADD         #96,R4
+    00000AB4 14D5                   MOV.L       R13,@(20,R4)
+    00000AB6              L745:                             
+         Hex.cpp   379                    }
+         Hex.cpp   380    
+         Hex.cpp   381                    selectionMade = true;
+    00000AB6 1FB1                   MOV.L       R11,@(4,R15)
+    00000AB8              L739:                             
+    00000AB8 9437                   MOV.W       L813,R4    ; H'7534
+    00000ABA D31E                   MOV.L       L813+10,R3 ; _IsKeyDown
+    00000ABC 430B                   JSR         @R3
+    00000ABE 0009                   NOP
+    00000AC0 2008                   TST         R0,R0
+    00000AC2 8B01                   BF          L814
+    00000AC4 AF75                   BRA         L740
+    00000AC6 0009                   NOP
+    00000AC8              L814:                             
+         Hex.cpp   382                }
+         Hex.cpp   383        }
+         Hex.cpp   384    
+         Hex.cpp   385        manager = MapDisplayManager(map);
+    00000AC8 9430                   MOV.W       L813+2,R4  ; H'00FC
+    00000ACA 65F3                   MOV         R15,R5
+    00000ACC D31A                   MOV.L       L813+14,R3 ; ___ct__17MapDisplayManagerFPA6_i
+    00000ACE 750C                   ADD         #12,R5
+    00000AD0 1F51                   MOV.L       R5,@(4,R15)
+    00000AD2 430B                   JSR         @R3
+    00000AD4 34FC                   ADD         R15,R4
+    00000AD6 61E3                   MOV         R14,R1
+    00000AD8 9228                   MOV.W       L813+2,R2  ; H'00FC
+    00000ADA 9028                   MOV.W       L813+4,R0  ; H'00A0
+    00000ADC D317                   MOV.L       L813+18,R3 ; __quick_mvn
+    00000ADE 430B                   JSR         @R3
+    00000AE0 32FC                   ADD         R15,R2
+         Hex.cpp   386        points = PointsManager(map);
+    00000AE2 55F1                   MOV.L       @(4,R15),R5
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   34
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000AE4 9424                   MOV.W       L813+6,R4  ; H'0084
+    00000AE6 D316                   MOV.L       L813+22,R3 ; ___ct__13PointsManagerFPA6_i
+    00000AE8 430B                   JSR         @R3
+    00000AEA 34FC                   ADD         R15,R4
+    00000AEC D115                   MOV.L       L813+26,R1 ; _points
+    00000AEE 921F                   MOV.W       L813+6,R2  ; H'0084
+    00000AF0 D312                   MOV.L       L813+18,R3 ; __quick_mvn
+    00000AF2 32FC                   ADD         R15,R2
+    00000AF4 430B                   JSR         @R3
+    00000AF6 E078                   MOV         #120,R0
+    00000AF8 941A                   MOV.W       L813+6,R4  ; H'0084
+    00000AFA E502                   MOV         #2,R5
+    00000AFC D212                   MOV.L       L813+30,R2 ; ___dt__13PointsManagerFv
+    00000AFE 420B                   JSR         @R2
+    00000B00 34FC                   ADD         R15,R4
+         Hex.cpp   387        
+         Hex.cpp   388        turn = PLAYER_1;
+    00000B02 2AC2                   MOV.L       R12,@R10
+         Hex.cpp   389        reinforcement = false;
+    00000B04 D311                   MOV.L       L813+34,R3 ; _reinforcement
+         Hex.cpp   390        
+         Hex.cpp   391        timeRefCurrent = RTC_getTicks();
+    00000B06 D212                   MOV.L       L813+38,R2 ; _RTC_getTicks
+    00000B08 420B                   JSR         @R2
+    00000B0A 23C2                   MOV.L       R12,@R3
+    00000B0C D111                   MOV.L       L813+42,R1 ; _timeRefCurrent
+         Hex.cpp   392        timeRefLocked = RTC_getTicks();
+    00000B0E D310                   MOV.L       L813+38,R3 ; _RTC_getTicks
+    00000B10 430B                   JSR         @R3
+    00000B12 2102                   MOV.L       R0,@R1
+    00000B14 D210                   MOV.L       L813+46,R2 ; _timeRefLocked
+         Hex.cpp   393    
+         Hex.cpp   394        rPointsPlayer1 = 0;
+         Hex.cpp   395        rPointsPlayer2 = 0;
+         Hex.cpp   396        
+         Hex.cpp   397        SetTimer(1, 25, updateDisplay);
+    00000B16 E519                   MOV         #25,R5
+    00000B18 D311                   MOV.L       L813+54,R3 ; _SetTimer
+    00000B1A 2202                   MOV.L       R0,@R2
+    00000B1C 29C2                   MOV.L       R12,@R9
+    00000B1E 28C2                   MOV.L       R12,@R8
+    00000B20 D60E                   MOV.L       L813+50,R6 ; _updateDisplay__Fv
+    00000B22 430B                   JSR         @R3
+    00000B24 E401                   MOV         #1,R4
+         Hex.cpp   398    
+         Hex.cpp   399        bool locked = false;
+         Hex.cpp   400    
+         Hex.cpp   401        while (!IsKeyDown(KEY_CTRL_EXIT)){
+    00000B26 A182                   BRA         L747
+    00000B28 6DC3                   MOV         R12,R13
+    00000B2A              L813:                             
+    00000B2A 7534                   .DATA.W     H'7534
+    00000B2C 00FC                   .DATA.W     H'00FC
+    00000B2E 00A0                   .DATA.W     H'00A0
+    00000B30 0084                   .DATA.W     H'0084
+    00000B32 0000                   .DATA.W     0
+    00000B34 <00000000>             .DATA.L     _IsKeyDown
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   35
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000B38 <00000000>             .DATA.L     ___ct__17MapDisplayManagerFPA6_i
+    00000B3C <00000000>             .DATA.L     __quick_mvn
+    00000B40 <00000000>             .DATA.L     ___ct__13PointsManagerFPA6_i
+    00000B44 <00000000>             .DATA.L     _points
+    00000B48 <00000000>             .DATA.L     ___dt__13PointsManagerFv
+    00000B4C <00000000>             .DATA.L     _reinforcement
+    00000B50 <00000000>             .DATA.L     _RTC_getTicks
+    00000B54 <00000000>             .DATA.L     _timeRefCurrent
+    00000B58 <00000000>             .DATA.L     _timeRefLocked
+    00000B5C <00000000>             .DATA.L     _updateDisplay__Fv
+    00000B60 <00000000>             .DATA.L     _SetTimer
+    00000B64              L748:                             
+         Hex.cpp   402    
+         Hex.cpp   403            unsigned int key = 0;
+    00000B64 1FC2                   MOV.L       R12,@(8,R15)
+         Hex.cpp   404    
+         Hex.cpp   405            GetKey(&key);
+    00000B66 64F3                   MOV         R15,R4
+    00000B68 D329                   MOV.L       L815+20,R3 ; _GetKey
+    00000B6A 430B                   JSR         @R3
+    00000B6C 7408                   ADD         #8,R4
+    00000B6E D229                   MOV.L       L815+24,R2 ; _reinforcement
+    00000B70 50F2                   MOV.L       @(8,R15),R0
+    00000B72 9143                   MOV.W       L815,R1    ; H'7542
+    00000B74 3010                   CMP/EQ      R1,R0
+    00000B76 8D13                   BT/S        L554
+    00000B78 6422                   MOV.L       @R2,R4
+    00000B7A 9140                   MOV.W       L815+2,R1  ; H'7547
+    00000B7C 3010                   CMP/EQ      R1,R0
+    00000B7E 8911                   BT          L555
+    00000B80 913E                   MOV.W       L815+4,R1  ; H'7545
+    00000B82 3010                   CMP/EQ      R1,R0
+    00000B84 8910                   BT          L556
+    00000B86 913C                   MOV.W       L815+6,R1  ; H'7544
+    00000B88 3010                   CMP/EQ      R1,R0
+    00000B8A 890F                   BT          L557
+    00000B8C 913A                   MOV.W       L815+8,R1  ; H'7534
+    00000B8E 3010                   CMP/EQ      R1,R0
+    00000B90 8913                   BT          L558
+    00000B92 9138                   MOV.W       L815+10,R1 ; H'7538
+    00000B94 3010                   CMP/EQ      R1,R0
+    00000B96 8B01                   BF          L816
+    00000B98 A114                   BRA         L559
+    00000B9A 0009                   NOP
+    00000B9C              L816:                             
+    00000B9C A147                   BRA         L747
+    00000B9E 0009                   NOP
+    00000BA0              L554:                            ; case label 
+         Hex.cpp   406    
+         Hex.cpp   407            switch (key){
+         Hex.cpp   408                case KEY_CTRL_UP:
+         Hex.cpp   409                    manager.changeCurrentSelection(TOP);
+         Hex.cpp   410                break;
+    00000BA0 A005                   BRA         L794
+    00000BA2 E500                   MOV         #0,R5
+    00000BA4              L555:                            ; case label 
+         Hex.cpp   411    
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   36
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+         Hex.cpp   412                case KEY_CTRL_DOWN:
+         Hex.cpp   413                    manager.changeCurrentSelection(BOTTOM);
+         Hex.cpp   414                break;
+    00000BA4 A003                   BRA         L794
+    00000BA6 E503                   MOV         #3,R5
+    00000BA8              L556:                            ; case label 
+         Hex.cpp   415    
+         Hex.cpp   416                case KEY_CTRL_RIGHT:
+         Hex.cpp   417                    manager.changeCurrentSelection(RIGHT);
+         Hex.cpp   418                break;
+    00000BA8 A001                   BRA         L794
+    00000BAA E502                   MOV         #2,R5
+    00000BAC              L557:                            ; case label 
+         Hex.cpp   419    
+         Hex.cpp   420                case KEY_CTRL_LEFT:
+         Hex.cpp   421                    manager.changeCurrentSelection(LEFT);
+    00000BAC E501                   MOV         #1,R5
+         Hex.cpp   422                break;
+    00000BAE              L794:                             
+    00000BAE D41A                   MOV.L       L815+28,R4 ; _manager
+    00000BB0 D31A                   MOV.L       L815+32,R3 ; _changeCurrentSelection__17MapDisplayManagerF9Direction
+    00000BB2 430B                   JSR         @R3
+    00000BB4 0009                   NOP
+    00000BB6 A13A                   BRA         L747
+    00000BB8 0009                   NOP
+    00000BBA              L558:                            ; case label 
+    00000BBA 9025                   MOV.W       L815+12,R0 ; H'0080
+    00000BBC 63A2                   MOV.L       @R10,R3
+    00000BBE 06EE                   MOV.L       @(R0,R14),R6
+    00000BC0 7014                   ADD         #20,R0
+    00000BC2 2338                   TST         R3,R3
+    00000BC4 8D02                   BT/S        L817
+    00000BC6 05EE                   MOV.L       @(R0,R14),R5
+    00000BC8 A07D                   BRA         L750
+    00000BCA 0009                   NOP
+    00000BCC              L817:                             
+         Hex.cpp   423    
+         Hex.cpp   424                case KEY_CTRL_EXE:
+         Hex.cpp   425                    if (turn == PLAYER_1){
+         Hex.cpp   426                        if (!reinforcement){
+    00000BCC 2448                   TST         R4,R4
+    00000BCE 8B4E                   BF          L751
+         Hex.cpp   427                            if (!locked){
+    00000BD0 2DD8                   TST         R13,R13
+    00000BD2 8B29                   BF          L752
+         Hex.cpp   428                                if (manager.playerAtCurrentSelection() == PLAYER_1 && points.numberAt(manager.
+                         +getCurrentLine(), manager.getCurrentColumn()) > 1){
+    00000BD4 9019                   MOV.W       L815+14,R0 ; H'0088
+    00000BD6 03EE                   MOV.L       @(R0,R14),R3
+    00000BD8 2338                   TST         R3,R3
+    00000BDA 8901                   BT          L818
+    00000BDC A127                   BRA         L747
+    00000BDE 0009                   NOP
+    00000BE0              L818:                             
+    00000BE0 9014                   MOV.W       L815+16,R0 ; H'0084
+    00000BE2 06EE                   MOV.L       @(R0,R14),R6
+    00000BE4 D40E                   MOV.L       L815+36,R4 ; _points
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   37
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000BE6 70FC                   ADD         #-4,R0
+    00000BE8 D30E                   MOV.L       L815+40,R3 ; _numberAt__13PointsManagerFUlT1
+    00000BEA 430B                   JSR         @R3
+    00000BEC 05EE                   MOV.L       @(R0,R14),R5
+    00000BEE E201                   MOV         #1,R2
+    00000BF0 3027                   CMP/GT      R2,R0
+    00000BF2 8B01                   BF          L819
+    00000BF4 A07D                   BRA         L538
+    00000BF6 0009                   NOP
+    00000BF8              L819:                             
+         Hex.cpp   429                                    manager.setLockedToCurrent();
+         Hex.cpp   430                                    locked = true;
+    00000BF8 A119                   BRA         L747
+    00000BFA 0009                   NOP
+    00000BFC              L815:                             
+    00000BFC 7542                   .DATA.W     H'7542
+    00000BFE 7547                   .DATA.W     H'7547
+    00000C00 7545                   .DATA.W     H'7545
+    00000C02 7544                   .DATA.W     H'7544
+    00000C04 7534                   .DATA.W     H'7534
+    00000C06 7538                   .DATA.W     H'7538
+    00000C08 0080                   .DATA.W     H'0080
+    00000C0A 0088                   .DATA.W     H'0088
+    00000C0C 0084                   .DATA.W     H'0084
+    00000C0E 0000                   .DATA.W     0
+    00000C10 <00000000>             .DATA.L     _GetKey
+    00000C14 <00000000>             .DATA.L     _reinforcement
+    00000C18 <00000000>             .DATA.L     _manager
+    00000C1C <00000000>             .DATA.L     _changeCurrentSelection__17MapDisplayManagerF9Direction
+    00000C20 <00000000>             .DATA.L     _points
+    00000C24 <00000000>             .DATA.L     _numberAt__13PointsManagerFUlT1
+    00000C28              L752:                             
+         Hex.cpp   431                                }
+         Hex.cpp   432                            } else {
+         Hex.cpp   433                                    if (manager.getCurrentLine() == manager.getLockedLine() && manager.getCurr
+                         +entColumn() == manager.getLockedColumn()){
+    00000C28 3650                   CMP/EQ      R5,R6
+    00000C2A 8B0A                   BF          L755
+    00000C2C D136                   MOV.L       L820+10,R1 ; H'00000098+_manager
+    00000C2E 6312                   MOV.L       @R1,R3
+    00000C30 D236                   MOV.L       L820+14,R2 ; H'00000084+_manager
+    00000C32 6122                   MOV.L       @R2,R1
+    00000C34 3130                   CMP/EQ      R3,R1
+    00000C36 8B04                   BF          L755
+         Hex.cpp   434                                            manager.resetLockedSelection();
+    00000C38 D435                   MOV.L       L820+18,R4 ; _manager
+    00000C3A D236                   MOV.L       L820+22,R2 ; _resetLockedSelection__17MapDisplayManagerFv
+    00000C3C 420B                   JSR         @R2
+    00000C3E 0009                   NOP
+         Hex.cpp   435                                    locked = false;
+    00000C40 6DC3                   MOV         R12,R13
+    00000C42              L755:                             
+         Hex.cpp   436                                }
+         Hex.cpp   437                                                            
+         Hex.cpp   438                                                            if (manager.playerAtCurrentSelection() != PLAYER_1
+                         + && (manager.getCurrentLine() != manager.getLockedLine() || manager.getCurrentColumn() != manager.getLocke
+                         +dColumn())){
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   38
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000C42 905C                   MOV.W       L820,R0    ; H'0088
+    00000C44 03EE                   MOV.L       @(R0,R14),R3
+    00000C46 2338                   TST         R3,R3
+    00000C48 8B01                   BF          L821
+    00000C4A A0F0                   BRA         L747
+    00000C4C 0009                   NOP
+    00000C4E              L821:                             
+    00000C4E 9057                   MOV.W       L820+2,R0  ; H'0094
+    00000C50 03EE                   MOV.L       @(R0,R14),R3
+    00000C52 70EC                   ADD         #-20,R0
+    00000C54 02EE                   MOV.L       @(R0,R14),R2
+    00000C56 3230                   CMP/EQ      R3,R2
+    00000C58 8B07                   BF          L757
+    00000C5A 9052                   MOV.W       L820+4,R0  ; H'0098
+    00000C5C 03EE                   MOV.L       @(R0,R14),R3
+    00000C5E 70EC                   ADD         #-20,R0
+    00000C60 01EE                   MOV.L       @(R0,R14),R1
+    00000C62 3130                   CMP/EQ      R3,R1
+    00000C64 8B01                   BF          L822
+    00000C66 A0E2                   BRA         L747
+    00000C68 0009                   NOP
+    00000C6A              L822:                             
+    00000C6A              L757:                             
+    00000C6A A07D                   BRA         L795
+         Hex.cpp   439                                                                    applyDamageFrom(PLAYER_1);
+    00000C6C E400                   MOV         #0,R4
+    00000C6E              L751:                             
+         Hex.cpp   440                                                                    manager.resetLockedSelection();
+         Hex.cpp   441                                    locked = false;
+         Hex.cpp   442                                                            }
+         Hex.cpp   443                            }
+         Hex.cpp   444                        } else {
+         Hex.cpp   445                            if (manager.playerAtCurrentSelection() == PLAYER_1 && rPointsPlayer1 != 0 && point
+                         +s.numberAt(manager.getCurrentLine(), manager.getCurrentColumn()) < 8){
+    00000C6E 9046                   MOV.W       L820,R0    ; H'0088
+    00000C70 01EE                   MOV.L       @(R0,R14),R1
+    00000C72 2118                   TST         R1,R1
+    00000C74 8901                   BT          L823
+    00000C76 A0DA                   BRA         L747
+    00000C78 0009                   NOP
+    00000C7A              L823:                             
+    00000C7A D127                   MOV.L       L820+26,R1 ; _rPointsPlayer1
+    00000C7C 6312                   MOV.L       @R1,R3
+    00000C7E 2338                   TST         R3,R3
+    00000C80 8B01                   BF          L824
+    00000C82 A0D4                   BRA         L747
+    00000C84 0009                   NOP
+    00000C86              L824:                             
+    00000C86 903D                   MOV.W       L820+6,R0  ; H'0084
+    00000C88 D424                   MOV.L       L820+30,R4 ; _points
+    00000C8A 06EE                   MOV.L       @(R0,R14),R6
+    00000C8C D324                   MOV.L       L820+34,R3 ; _numberAt__13PointsManagerFUlT1
+    00000C8E 70FC                   ADD         #-4,R0
+    00000C90 430B                   JSR         @R3
+    00000C92 05EE                   MOV.L       @(R0,R14),R5
+    00000C94 E208                   MOV         #8,R2
+    00000C96 3023                   CMP/GE      R2,R0
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   39
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000C98 8B01                   BF          L825
+    00000C9A A0C8                   BRA         L747
+    00000C9C 0009                   NOP
+    00000C9E              L825:                             
+         Hex.cpp   446                                points.setNumberAt(manager.getCurrentLine(), manager.getCurrentColumn(), point
+                         +s.numberAt(manager.getCurrentLine(), manager.getCurrentColumn()) + 1);
+    00000C9E 9031                   MOV.W       L820+6,R0  ; H'0084
+    00000CA0 D41E                   MOV.L       L820+30,R4 ; _points
+    00000CA2 06EE                   MOV.L       @(R0,R14),R6
+    00000CA4 D31E                   MOV.L       L820+34,R3 ; _numberAt__13PointsManagerFUlT1
+    00000CA6 70FC                   ADD         #-4,R0
+    00000CA8 430B                   JSR         @R3
+    00000CAA 05EE                   MOV.L       @(R0,R14),R5
+    00000CAC D41B                   MOV.L       L820+30,R4 ; _points
+    00000CAE 6703                   MOV         R0,R7
+    00000CB0 D31C                   MOV.L       L820+38,R3 ; _setNumberAt__13PointsManagerFUlN21
+    00000CB2 7701                   ADD         #1,R7
+    00000CB4 9026                   MOV.W       L820+6,R0  ; H'0084
+    00000CB6 06EE                   MOV.L       @(R0,R14),R6
+    00000CB8 70FC                   ADD         #-4,R0
+    00000CBA 430B                   JSR         @R3
+    00000CBC 05EE                   MOV.L       @(R0,R14),R5
+         Hex.cpp   447                                --rPointsPlayer1;
+    00000CBE 6292                   MOV.L       @R9,R2
+    00000CC0 72FF                   ADD         #-1,R2
+    00000CC2 A0B4                   BRA         L747
+    00000CC4 2922                   MOV.L       R2,@R9
+    00000CC6              L750:                             
+         Hex.cpp   448                            }
+         Hex.cpp   449                        }
+         Hex.cpp   450                    } else {
+         Hex.cpp   451                        if (!reinforcement){
+    00000CC6 2448                   TST         R4,R4
+    00000CC8 8B56                   BF          L761
+         Hex.cpp   452                            if (!locked){
+    00000CCA 2DD8                   TST         R13,R13
+    00000CCC 8B2E                   BF          L762
+         Hex.cpp   453                                if (manager.playerAtCurrentSelection() == PLAYER_2 && points.numberAt(manager.
+                         +getCurrentLine(), manager.getCurrentColumn()) > 1){
+    00000CCE 9016                   MOV.W       L820,R0    ; H'0088
+    00000CD0 00EE                   MOV.L       @(R0,R14),R0
+    00000CD2 8801                   CMP/EQ      #1,R0
+    00000CD4 8901                   BT          L826
+    00000CD6 A0AA                   BRA         L747
+    00000CD8 0009                   NOP
+    00000CDA              L826:                             
+    00000CDA 9013                   MOV.W       L820+6,R0  ; H'0084
+    00000CDC D40F                   MOV.L       L820+30,R4 ; _points
+    00000CDE 06EE                   MOV.L       @(R0,R14),R6
+    00000CE0 D30F                   MOV.L       L820+34,R3 ; _numberAt__13PointsManagerFUlT1
+    00000CE2 70FC                   ADD         #-4,R0
+    00000CE4 430B                   JSR         @R3
+    00000CE6 05EE                   MOV.L       @(R0,R14),R5
+    00000CE8 E201                   MOV         #1,R2
+    00000CEA 3027                   CMP/GT      R2,R0
+    00000CEC 8901                   BT          L827
+    00000CEE A09E                   BRA         L747
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   40
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000CF0 0009                   NOP
+    00000CF2              L827:                             
+    00000CF2              L538:
+         Hex.cpp   454                                    manager.setLockedToCurrent();
+    00000CF2 DD0D                   MOV.L       L820+42,R13; _setLockedToCurrent__17MapDisplayManagerFv
+    00000CF4 D406                   MOV.L       L820+18,R4 ; _manager
+    00000CF6 4D0B                   JSR         @R13
+    00000CF8 0009                   NOP
+         Hex.cpp   455                                    locked = true;
+    00000CFA A098                   BRA         L747
+    00000CFC 6DB3                   MOV         R11,R13
+    00000CFE              L820:                             
+    00000CFE 0088                   .DATA.W     H'0088
+    00000D00 0094                   .DATA.W     H'0094
+    00000D02 0098                   .DATA.W     H'0098
+    00000D04 0084                   .DATA.W     H'0084
+    00000D06 0000                   .DATA.W     0
+    00000D08 <00000098>             .DATA.L     H'00000098+_manager
+    00000D0C <00000084>             .DATA.L     H'00000084+_manager
+    00000D10 <00000000>             .DATA.L     _manager
+    00000D14 <00000000>             .DATA.L     _resetLockedSelection__17MapDisplayManagerFv
+    00000D18 <00000000>             .DATA.L     _rPointsPlayer1
+    00000D1C <00000000>             .DATA.L     _points
+    00000D20 <00000000>             .DATA.L     _numberAt__13PointsManagerFUlT1
+    00000D24 <00000000>             .DATA.L     _setNumberAt__13PointsManagerFUlN21
+    00000D28 <00000000>             .DATA.L     _setLockedToCurrent__17MapDisplayManagerFv
+    00000D2C              L762:                             
+         Hex.cpp   456                                }
+         Hex.cpp   457                            } else {
+         Hex.cpp   458                                    if (manager.getCurrentLine() == manager.getLockedLine() && manager.getCurr
+                         +entColumn() == manager.getLockedColumn()){
+    00000D2C 3650                   CMP/EQ      R5,R6
+    00000D2E 8B0A                   BF          L765
+    00000D30 D330                   MOV.L       L828+10,R3 ; H'00000098+_manager
+    00000D32 6132                   MOV.L       @R3,R1
+    00000D34 D230                   MOV.L       L828+14,R2 ; H'00000084+_manager
+    00000D36 6322                   MOV.L       @R2,R3
+    00000D38 3310                   CMP/EQ      R1,R3
+    00000D3A 8B04                   BF          L765
+         Hex.cpp   459                                            manager.resetLockedSelection();
+    00000D3C D42F                   MOV.L       L828+18,R4 ; _manager
+    00000D3E D230                   MOV.L       L828+22,R2 ; _resetLockedSelection__17MapDisplayManagerFv
+    00000D40 420B                   JSR         @R2
+    00000D42 0009                   NOP
+         Hex.cpp   460                                    locked = false;
+    00000D44 6DC3                   MOV         R12,R13
+    00000D46              L765:                             
+         Hex.cpp   461                                }
+         Hex.cpp   462                                                            
+         Hex.cpp   463                                                            if (manager.playerAtCurrentSelection() != PLAYER_2
+                         + && (manager.getCurrentLine() != manager.getLockedLine() || manager.getCurrentColumn() != manager.getLocke
+                         +dColumn())){
+    00000D46 9050                   MOV.W       L828,R0    ; H'0088
+    00000D48 00EE                   MOV.L       @(R0,R14),R0
+    00000D4A 8801                   CMP/EQ      #1,R0
+    00000D4C 896F                   BT          L747
+    00000D4E 904D                   MOV.W       L828+2,R0  ; H'0094
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   41
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000D50 02EE                   MOV.L       @(R0,R14),R2
+    00000D52 70EC                   ADD         #-20,R0
+    00000D54 03EE                   MOV.L       @(R0,R14),R3
+    00000D56 3320                   CMP/EQ      R2,R3
+    00000D58 8B05                   BF          L767
+    00000D5A 9048                   MOV.W       L828+4,R0  ; H'0098
+    00000D5C 03EE                   MOV.L       @(R0,R14),R3
+    00000D5E 70EC                   ADD         #-20,R0
+    00000D60 01EE                   MOV.L       @(R0,R14),R1
+    00000D62 3130                   CMP/EQ      R3,R1
+    00000D64 8963                   BT          L747
+    00000D66              L767:                             
+         Hex.cpp   464                                                                    applyDamageFrom(PLAYER_2);
+    00000D66 E401                   MOV         #1,R4
+    00000D68              L795:                             
+    00000D68 BB2E                   BSR         _applyDamageFrom__F10PlayerType
+    00000D6A 0009                   NOP
+         Hex.cpp   465                                                                    manager.resetLockedSelection();
+    00000D6C D423                   MOV.L       L828+18,R4 ; _manager
+    00000D6E D224                   MOV.L       L828+22,R2 ; _resetLockedSelection__17MapDisplayManagerFv
+    00000D70 420B                   JSR         @R2
+    00000D72 0009                   NOP
+         Hex.cpp   466                                    locked = false;
+    00000D74 A05B                   BRA         L747
+    00000D76 6DC3                   MOV         R12,R13
+    00000D78              L761:                             
+         Hex.cpp   467                                                            }
+         Hex.cpp   468                            }
+         Hex.cpp   469                        } else {
+         Hex.cpp   470                            if (manager.playerAtCurrentSelection() == PLAYER_2 && rPointsPlayer2 != 0 && point
+                         +s.numberAt(manager.getCurrentLine(), manager.getCurrentColumn()) < 8){
+    00000D78 9037                   MOV.W       L828,R0    ; H'0088
+    00000D7A 00EE                   MOV.L       @(R0,R14),R0
+    00000D7C 8801                   CMP/EQ      #1,R0
+    00000D7E 8B56                   BF          L747
+    00000D80 D320                   MOV.L       L828+26,R3 ; _rPointsPlayer2
+    00000D82 6132                   MOV.L       @R3,R1
+    00000D84 2118                   TST         R1,R1
+    00000D86 8952                   BT          L747
+    00000D88 9032                   MOV.W       L828+6,R0  ; H'0084
+    00000D8A 06EE                   MOV.L       @(R0,R14),R6
+    00000D8C D41E                   MOV.L       L828+30,R4 ; _points
+    00000D8E 70FC                   ADD         #-4,R0
+    00000D90 D21E                   MOV.L       L828+34,R2 ; _numberAt__13PointsManagerFUlT1
+    00000D92 420B                   JSR         @R2
+    00000D94 05EE                   MOV.L       @(R0,R14),R5
+    00000D96 E308                   MOV         #8,R3
+    00000D98 3033                   CMP/GE      R3,R0
+    00000D9A 8948                   BT          L747
+         Hex.cpp   471                                points.setNumberAt(manager.getCurrentLine(), manager.getCurrentColumn(), point
+                         +s.numberAt(manager.getCurrentLine(), manager.getCurrentColumn()) + 1);
+    00000D9C 9028                   MOV.W       L828+6,R0  ; H'0084
+    00000D9E 06EE                   MOV.L       @(R0,R14),R6
+    00000DA0 D419                   MOV.L       L828+30,R4 ; _points
+    00000DA2 70FC                   ADD         #-4,R0
+    00000DA4 D319                   MOV.L       L828+34,R3 ; _numberAt__13PointsManagerFUlT1
+    00000DA6 430B                   JSR         @R3
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   42
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000DA8 05EE                   MOV.L       @(R0,R14),R5
+    00000DAA 6703                   MOV         R0,R7
+    00000DAC D416                   MOV.L       L828+30,R4 ; _points
+    00000DAE 7701                   ADD         #1,R7
+    00000DB0 901E                   MOV.W       L828+6,R0  ; H'0084
+    00000DB2 06EE                   MOV.L       @(R0,R14),R6
+    00000DB4 D316                   MOV.L       L828+38,R3 ; _setNumberAt__13PointsManagerFUlN21
+    00000DB6 70FC                   ADD         #-4,R0
+    00000DB8 430B                   JSR         @R3
+    00000DBA 05EE                   MOV.L       @(R0,R14),R5
+         Hex.cpp   472                                --rPointsPlayer2;
+    00000DBC 6282                   MOV.L       @R8,R2
+    00000DBE 72FF                   ADD         #-1,R2
+         Hex.cpp   473                            }
+         Hex.cpp   474                        }
+         Hex.cpp   475                    }
+         Hex.cpp   476                break;
+    00000DC0 A035                   BRA         L747
+    00000DC2 2822                   MOV.L       R2,@R8
+    00000DC4              L559:                            ; case label 
+         Hex.cpp   477    
+         Hex.cpp   478                case KEY_CTRL_OPTN:
+         Hex.cpp   479                    if (!locked){
+    00000DC4 2DD8                   TST         R13,R13
+    00000DC6 8B32                   BF          L747
+         Hex.cpp   480                            if (turn == PLAYER_1){
+    00000DC8 63A2                   MOV.L       @R10,R3
+    00000DCA 2338                   TST         R3,R3
+    00000DCC 8B09                   BF          L771
+    00000DCE 2448                   TST         R4,R4
+    00000DD0 8901                   BT          L772
+         Hex.cpp   481                                if (reinforcement)
+         Hex.cpp   482                                    turn = PLAYER_2;
+    00000DD2 A026                   BRA         L539
+    00000DD4 2AB2                   MOV.L       R11,@R10
+    00000DD6              L772:                             
+         Hex.cpp   483                                else
+         Hex.cpp   484                                    rPointsPlayer1 = manager.getReinforcementPoints(PLAYER_1);
+    00000DD6 D409                   MOV.L       L828+18,R4 ; _manager
+    00000DD8 D30E                   MOV.L       L828+42,R3 ; _getReinforcementPoints__17MapDisplayManagerF10PlayerType
+    00000DDA 430B                   JSR         @R3
+    00000DDC E500                   MOV         #0,R5
+    00000DDE A020                   BRA         L539
+    00000DE0 2902                   MOV.L       R0,@R9
+    00000DE2              L771:                             
+    00000DE2 2448                   TST         R4,R4
+    00000DE4 8918                   BT          L775
+         Hex.cpp   485    
+         Hex.cpp   486                                reinforcement = !reinforcement;
+         Hex.cpp   487                            } else {
+         Hex.cpp   488                                if (reinforcement)
+         Hex.cpp   489                                    turn = PLAYER_1;
+    00000DE6 A01C                   BRA         L539
+    00000DE8 2AC2                   MOV.L       R12,@R10
+    00000DEA              L828:                             
+    00000DEA 0088                   .DATA.W     H'0088
+    00000DEC 0094                   .DATA.W     H'0094
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   43
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000DEE 0098                   .DATA.W     H'0098
+    00000DF0 0084                   .DATA.W     H'0084
+    00000DF2 0000                   .DATA.W     0
+    00000DF4 <00000098>             .DATA.L     H'00000098+_manager
+    00000DF8 <00000084>             .DATA.L     H'00000084+_manager
+    00000DFC <00000000>             .DATA.L     _manager
+    00000E00 <00000000>             .DATA.L     _resetLockedSelection__17MapDisplayManagerFv
+    00000E04 <00000000>             .DATA.L     _rPointsPlayer2
+    00000E08 <00000000>             .DATA.L     _points
+    00000E0C <00000000>             .DATA.L     _numberAt__13PointsManagerFUlT1
+    00000E10 <00000000>             .DATA.L     _setNumberAt__13PointsManagerFUlN21
+    00000E14 <00000000>             .DATA.L     _getReinforcementPoints__17MapDisplayManagerF10PlayerType
+    00000E18              L775:                             
+         Hex.cpp   490                                else
+         Hex.cpp   491                                    rPointsPlayer2 = manager.getReinforcementPoints(PLAYER_2);
+    00000E18 D412                   MOV.L       L829+4,R4  ; _manager
+    00000E1A D113                   MOV.L       L829+8,R1  ; _getReinforcementPoints__17MapDisplayManagerF10PlayerType
+    00000E1C 410B                   JSR         @R1
+    00000E1E E501                   MOV         #1,R5
+    00000E20 2802                   MOV.L       R0,@R8
+    00000E22              L539:
+         Hex.cpp   492    
+         Hex.cpp   493                                reinforcement = !reinforcement;
+    00000E22 D312                   MOV.L       L829+12,R3 ; _reinforcement
+    00000E24 6032                   MOV.L       @R3,R0
+    00000E26 6233                   MOV         R3,R2
+    00000E28 2008                   TST         R0,R0
+    00000E2A 0029                   MOVT        R0
+    00000E2C 2202                   MOV.L       R0,@R2
+         Hex.cpp   494                            }
+         Hex.cpp   495                        }
+         Hex.cpp   496                break;
+         Hex.cpp   497    
+         Hex.cpp   498                default:
+         Hex.cpp   499                break;
+    00000E2E              L747:                             
+    00000E2E 9417                   MOV.W       L829,R4    ; H'7532
+    00000E30 D30F                   MOV.L       L829+16,R3 ; _IsKeyDown
+    00000E32 430B                   JSR         @R3
+    00000E34 0009                   NOP
+    00000E36 2008                   TST         R0,R0
+    00000E38 8B01                   BF          L830
+    00000E3A AE93                   BRA         L748
+    00000E3C 0009                   NOP
+    00000E3E              L830:                             
+         Hex.cpp   500            }
+         Hex.cpp   501        }
+         Hex.cpp   502    
+         Hex.cpp   503        KillTimer(1);
+    00000E3E D30D                   MOV.L       L829+20,R3 ; _KillTimer
+    00000E40 430B                   JSR         @R3
+    00000E42 E401                   MOV         #1,R4
+         Hex.cpp   504    
+         Hex.cpp   505        return 1;
+         Hex.cpp   506    }
+    00000E44 910D                   MOV.W       L829+2,R1  ; H'019C
+    00000E46 E001                   MOV         #1,R0
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   44
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000E48 3F1C                   ADD         R1,R15
+    00000E4A 4F26                   LDS.L       @R15+,PR
+    00000E4C 68F6                   MOV.L       @R15+,R8
+    00000E4E 69F6                   MOV.L       @R15+,R9
+    00000E50 6AF6                   MOV.L       @R15+,R10
+    00000E52 6BF6                   MOV.L       @R15+,R11
+    00000E54 6CF6                   MOV.L       @R15+,R12
+    00000E56 6DF6                   MOV.L       @R15+,R13
+    00000E58 000B                   RTS
+    00000E5A 6EF6                   MOV.L       @R15+,R14
+         Hex.cpp   507    
+         Hex.cpp   508    extern "C" {
+         Hex.cpp   509        int AddIn_main(int isAppli, unsigned short OptionNum){
+    00000E5C              _AddIn_main:                     ; function: AddIn_main
+                                                           ; frame size=0
+         Hex.cpp   510            return main();
+    00000E5C AD91                   BRA         _main
+    00000E5E 0009                   NOP
+    00000E60              L829:                             
+    00000E60 7532                   .DATA.W     H'7532
+    00000E62 019C                   .DATA.W     H'019C
+    00000E64 <00000000>             .DATA.L     _manager
+    00000E68 <00000000>             .DATA.L     _getReinforcementPoints__17MapDisplayManagerF10PlayerType
+    00000E6C <00000000>             .DATA.L     _reinforcement
+    00000E70 <00000000>             .DATA.L     _IsKeyDown
+    00000E74 <00000000>             .DATA.L     _KillTimer
+         Hex.cpp   511        }
+         Hex.cpp   512    
+         Hex.cpp   513        #pragma section _BR_Size
+         Hex.cpp   514        unsigned long BR_Size;
+         Hex.cpp   515        #pragma section
+         Hex.cpp   516    
+         Hex.cpp   517        #pragma section _TOP
+         Hex.cpp   518    
+         Hex.cpp   519        int InitializeSystem(int isAppli, unsigned short OptionNum){
+P_T 00000000              _InitializeSystem:               ; function: InitializeSystem
+                                                           ; frame size=0
+         Hex.cpp   520            return INIT_ADDIN_APPLICATION(isAppli, OptionNum);
+    00000000 D301                   MOV.L       L831+2,R3  ; _INIT_ADDIN_APPLICATION
+    00000002 432B                   JMP         @R3
+    00000004 0009                   NOP
+    00000006              L831:                             
+    00000006 0000                   .DATA.W     0
+    00000008 <00000000>             .DATA.L     _INIT_ADDIN_APPLICATION
+         Hex.cpp   521        }
+         Hex.cpp   522    
+         Hex.cpp   523        #pragma section
+         Hex.cpp   524    };
+P   00000E78              __$__dt__17MapDisplayManagerFv:  ; function: MapDisplayManager::~MapDisplayManager()
+                                                           ; frame size=4
+    00000E78 7FFC                   ADD         #-4,R15
+    00000E7A 6343                   MOV         R4,R3
+    00000E7C 2338                   TST         R3,R3
+    00000E7E 8D07                   BT/S        L783
+    00000E80 2F42                   MOV.L       R4,@R15
+    00000E82 E301                   MOV         #1,R3
+    00000E84 2538                   TST         R3,R5
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   45
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+    00000E86 8903                   BT          L783
+    00000E88 64F2                   MOV.L       @R15,R4
+    00000E8A D207                   MOV.L       L832+2,R2  ; ___dl__FPv
+    00000E8C 422B                   JMP         @R2
+    00000E8E 7F04                   ADD         #4,R15
+    00000E90              L783:                             
+    00000E90 000B                   RTS
+    00000E92 7F04                   ADD         #4,R15
+    00000E94              ___sti__Hex_cpp_manager:         ; function: __sti__Hex_cpp_manager
+                                                           ; frame size=4
+    00000E94 4F22                   STS.L       PR,@-R15
+    00000E96 D405                   MOV.L       L832+6,R4  ; __$__T22523516$487
+    00000E98 D305                   MOV.L       L832+10,R3 ; ___record_needed_destruction
+    00000E9A 430B                   JSR         @R3
+    00000E9C 0009                   NOP
+    00000E9E D405                   MOV.L       L832+14,R4 ; __$__T22524212$488
+    00000EA0 D203                   MOV.L       L832+10,R2 ; ___record_needed_destruction
+    00000EA2 422B                   JMP         @R2
+    00000EA4 4F26                   LDS.L       @R15+,PR
+    00000EA6              L832:                             
+    00000EA6 0000                   .DATA.W     0
+    00000EA8 <00000000>             .DATA.L     ___dl__FPv
+    00000EAC <00000000>             .DATA.L     __$__T22523516$487
+    00000EB0 <00000000>             .DATA.L     ___record_needed_destruction
+    00000EB4 <00000000>             .DATA.L     __$__T22524212$488
+C$I 00000000              __$__link:                       ; static: __link
+    00000000 00000000               .DATA.L     H'00000000
+    00000004 <00000000>             .DATA.L     ___sti__Hex_cpp_manager
+    00000008 00000000               .DATA.L     H'00000000
+C   00000000              L439:
+    00000000 5B305D203D             .SDATA      "[0] = Random map"
+             2052616E64   
+             6F6D206D61   
+             70           
+    00000010 00                     .DATA.B     H'00
+    00000011 00000001               .RES.B      1
+    00000012 00000002               .RES.W      1
+    00000014              L440:
+    00000014 5B315D203D             .SDATA      "[1] = Pre-generated map"
+             205072652D   
+             67656E6572   
+             6174656420   
+             6D6170       
+    0000002B 00                     .DATA.B     H'00
+    0000002C              L442:
+    0000002C 5072657373             .SDATA      "Press [EXE] to start"
+             205B455845   
+             5D20746F20   
+             7374617274   
+    00000040 00                     .DATA.B     H'00
+D   00000000              __$__T22523516$487:              ; static: __T22523516
+    00000000 00000000               .DATA.L     H'00000000
+    00000004 <00000000>             .DATA.L     _manager,__$__dt__17MapDisplayManagerFv
+             <00000000>   
+    0000000C              __$__T22524212$488:              ; static: __T22524212
+    0000000C 00000000               .DATA.L     H'00000000
+    00000010 <00000000>             .DATA.L     _points,___dt__13PointsManagerFv
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE   46
+
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+             <00000000>   
+B   00000000              _manager:                        ; static: manager
+    00000000 000000A0               .RES.L      40
+    000000A0              _points:                         ; static: points
+    000000A0 00000078               .RES.L      30
+    00000118              _turn:                           ; static: turn
+    00000118 00000004               .RES.L      1
+    0000011C              _reinforcement:                  ; static: reinforcement
+    0000011C 00000004               .RES.L      1
+    00000120              _timeRefCurrent:                 ; static: timeRefCurrent
+    00000120 00000004               .RES.L      1
+    00000124              _timeRefLocked:                  ; static: timeRefLocked
+    00000124 00000004               .RES.L      1
+    00000128              _rPointsPlayer1:                 ; static: rPointsPlayer1
+    00000128 00000004               .RES.L      1
+    0000012C              _rPointsPlayer2:                 ; static: rPointsPlayer2
+    0000012C 00000004               .RES.L      1
+B_B 00000000              _BR_Size:                        ; static: BR_Size
+    00000000 00000004               .RES.L      1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:53:25  PAGE    1
+
+
+******** STATISTICS INFORMATION ********
+
+
+********** ERROR INFORMATION ***********
+
+NUMBER OF ERRORS:           0
+NUMBER OF WARNINGS:         0
+
+
+
+
+******* SOURCE LINE INFORMATION ********
+
+COMPILED SOURCE LINE:      524
+
+
+
+******* SECTION SIZE INFORMATION *******
+
+PROGRAM  SECTION (P):                               00000EB8 Byte(s)
+PROGRAM  SECTION (P_BR_Size):                       00000000 Byte(s)
+PROGRAM  SECTION (P$INIT):                          00000000 Byte(s)
+PROGRAM  SECTION (P_TOP):                           0000000C Byte(s)
+CONSTANT SECTION (C):                               00000041 Byte(s)
+CONSTANT SECTION (C_BR_Size):                       00000000 Byte(s)
+CONSTANT SECTION (C$INIT):                          0000000C Byte(s)
+CONSTANT SECTION (C_TOP):                           00000000 Byte(s)
+DATA     SECTION (D):                               00000018 Byte(s)
+DATA     SECTION (D_BR_Size):                       00000000 Byte(s)
+DATA     SECTION (D$INIT):                          00000000 Byte(s)
+DATA     SECTION (D_TOP):                           00000000 Byte(s)
+BSS      SECTION (B):                               00000130 Byte(s)
+BSS      SECTION (B_BR_Size):                       00000004 Byte(s)
+BSS      SECTION (B$INIT):                          00000000 Byte(s)
+BSS      SECTION (B_TOP):                           00000000 Byte(s)
+
+ TOTAL PROGRAM SIZE: 0000105D Byte(s)
+
+
+
+********** LABEL INFORMATION ***********
+
+NUMBER OF EXTERNAL REFERENCE SYMBOLS:           39
+NUMBER OF EXTERNAL DEFINITION SYMBOLS:          22
+NUMBER OF INTERNAL/EXTERNAL SYMBOLS:           218
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*** COMMAND PARAMETER ***
+
+
+  -subcommand=C:\Users\Nozalia\AppData\Local\Temp\hmk3C1C.tmp 
+

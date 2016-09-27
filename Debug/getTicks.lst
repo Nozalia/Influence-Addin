@@ -1,0 +1,137 @@
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:43:04  PAGE    1
+
+************ OBJECT LISTING ************
+
+FILE NAME: C:\Users\Nozalia\Desktop\Add-ins\Projects\Hex\Sources\getTicks.c
+
+SCT OFFSET   CODE       C LABEL     INSTRUCTION OPERAND    COMMENT
+
+      getTicks.c     1    #include "Sources/getTicks.h"
+      getTicks.c     2    
+      getTicks.c     3    int SysCallCode[3] = {0xD201422B,0x60F20000,0x80010070}; // déclaration en global des adresses
+      getTicks.c     4    int (*SysCall)(int R4, int R5, int R6, int R7, int FNo) = (void*)&SysCallCode; // et des registres
+      getTicks.c     5    // à ne placer dans votre code qu'une seule fois
+      getTicks.c     6    
+      getTicks.c     7    int RTC_getTicks(void){
+P   00000000              _RTC_getTicks:                   ; function: RTC_getTicks
+                                                           ; frame size=8
+    00000000 4F22                   STS.L       PR,@-R15
+      getTicks.c     8         return (*SysCall)(0, 0, 0, 0, 0x3B); // on déclare la fonction voulue selon son numéro (ici 0x3B)
+    00000002 E23B                   MOV         #59,R2
+    00000004 D30C                   MOV.L       L241,R3    ; _SysCall
+    00000006 E700                   MOV         #0,R7
+    00000008 6032                   MOV.L       @R3,R0
+    0000000A 6673                   MOV         R7,R6
+    0000000C 2F26                   MOV.L       R2,@-R15
+    0000000E 6573                   MOV         R7,R5
+    00000010 400B                   JSR         @R0
+    00000012 6473                   MOV         R7,R4
+      getTicks.c     9    }
+    00000014 7F04                   ADD         #4,R15
+    00000016 4F26                   LDS.L       @R15+,PR
+    00000018 000B                   RTS
+    0000001A 0009                   NOP
+      getTicks.c    10    
+      getTicks.c    11    // on peut répéter l'opération avec d'autres syscalls (ceci est un exemple sûrement non fonctionnel) :
+      getTicks.c    12    int SYS_call(void){
+    0000001C              _SYS_call:                       ; function: SYS_call
+                                                           ; frame size=8
+    0000001C 4F22                   STS.L       PR,@-R15
+      getTicks.c    13         return (*SysCall)(0, 0, 0, 0, 0x42);
+    0000001E E242                   MOV         #66,R2
+    00000020 D305                   MOV.L       L241,R3    ; _SysCall
+    00000022 E700                   MOV         #0,R7
+    00000024 6032                   MOV.L       @R3,R0
+    00000026 6673                   MOV         R7,R6
+    00000028 2F26                   MOV.L       R2,@-R15
+    0000002A 6573                   MOV         R7,R5
+    0000002C 400B                   JSR         @R0
+    0000002E 6473                   MOV         R7,R4
+      getTicks.c    14    }
+    00000030 7F04                   ADD         #4,R15
+    00000032 4F26                   LDS.L       @R15+,PR
+    00000034 000B                   RTS
+    00000036 0009                   NOP
+    00000038              L241:                             
+    00000038 <00000000>             .DATA.L     _SysCall
+D   00000000              _SysCallCode:                    ; static: SysCallCode
+    00000000 D201422B60             .DATA.L     H'D201422B,H'60F20000,H'80010070
+             F200008001   
+             0070         
+    0000000C              _SysCall:                        ; static: SysCall
+    0000000C <00000000>             .DATA.L     _SysCallCode
+
+
+
+
+SH SERIES C/C++ Compiler (Ver. 6.0C)                                                                 16-Sep-2016 23:43:04  PAGE    1
+
+
+******** STATISTICS INFORMATION ********
+
+
+********** ERROR INFORMATION ***********
+
+NUMBER OF ERRORS:           0
+NUMBER OF WARNINGS:         0
+
+
+
+
+******* SOURCE LINE INFORMATION ********
+
+COMPILED SOURCE LINE:       14
+
+
+
+******* SECTION SIZE INFORMATION *******
+
+PROGRAM  SECTION (P):                               0000003C Byte(s)
+CONSTANT SECTION (C):                               00000000 Byte(s)
+DATA     SECTION (D):                               00000010 Byte(s)
+BSS      SECTION (B):                               00000000 Byte(s)
+
+ TOTAL PROGRAM SIZE: 0000004C Byte(s)
+
+
+
+********** LABEL INFORMATION ***********
+
+NUMBER OF EXTERNAL REFERENCE SYMBOLS:            0
+NUMBER OF EXTERNAL DEFINITION SYMBOLS:           4
+NUMBER OF INTERNAL/EXTERNAL SYMBOLS:             5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*** COMMAND PARAMETER ***
+
+
+  -subcommand=C:\Users\Nozalia\AppData\Local\Temp\hmkC528.tmp 
+
